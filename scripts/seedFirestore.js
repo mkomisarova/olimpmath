@@ -1,5 +1,6 @@
 import admin from 'firebase-admin'
 import serviceAccount from './serviceAccount.json' with { type: 'json' }
+import problemsSeedHelper from '../src/data/problemsSeedHelper.js'
 
 const topicData = {
   topicId: 'dalamiba',
@@ -315,6 +316,21 @@ async function seed() {
       await db.collection('topics').doc(topic.topicId).set(topic, { merge: false })
       console.log(`Seeded: ${topic.topicId}`)
     }
+
+    for (const [index, problem] of problemsSeedHelper.entries()) {
+      const problemWithId = {
+        id: `p${index + 1}`,
+        ...problem,
+      }
+
+      await db
+        .collection('topics')
+        .doc('pirmrezinataji')
+        .collection('problems')
+        .doc(problemWithId.id)
+        .set(problemWithId)
+    }
+    console.log('Problems seeded for: pirmrezinataji')
 
     console.log('Topic seeded successfully')
     process.exit(0)

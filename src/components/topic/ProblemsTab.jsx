@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { getTopicProblems } from '../../firebase/content'
 import MathContent from '../ui/MathContent'
 import LoadingSpinner from '../ui/LoadingSpinner'
@@ -6,6 +6,12 @@ import LoadingSpinner from '../ui/LoadingSpinner'
 export default function ProblemsTab({ topicId }) {
   const [problems, setProblems] = useState([])
   const [loading, setLoading] = useState(true)
+  const [openSolutions, setOpenSolutions] = useState({})
+  const [solvedIds, setSolvedIds] = useState(new Set())
+
+  const solvedCount = useMemo(() => {
+    return problems.filter((problem) => solvedIds.has(problem.id)).length
+  }, [problems, solvedIds])
 
   useEffect(() => {
     let isMounted = true
@@ -16,6 +22,8 @@ export default function ProblemsTab({ topicId }) {
         const data = await getTopicProblems(topicId)
         if (isMounted) {
           setProblems(data)
+          setOpenSolutions({})
+          setSolvedIds(new Set())
         }
       } finally {
         if (isMounted) {
@@ -38,37 +46,165 @@ export default function ProblemsTab({ topicId }) {
   }
 
   if (problems.length === 0) {
-    return <p className="py-8 text-center text-muted">Uzdevumi drīzumā tiks pievienoti</p>
+    return (
+      <div className="py-12 text-center text-muted">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          className="mx-auto mb-3 h-8 w-8"
+          aria-hidden="true"
+        >
+          <path d="M7 3h10M7 21h10M8 3v4a4 4 0 0 0 1.3 2.9L12 12l2.7-2.1A4 4 0 0 0 16 7V3M8 21v-4a4 4 0 0 1 1.3-2.9L12 12l2.7 2.1A4 4 0 0 1 16 17v4" />
+        </svg>
+        <p>Uzdevumi drīzumā tiks pievienoti</p>
+      </div>
+    )
+  }
+
+  const formatGrades = (grades) => {
+    if (!Array.isArray(grades) || grades.length === 0) {
+      return 'Nav norādīts'
+    }
+
+    const sorted = [...grades].sort((a, b) => a - b)
+    const first = sorted[0]
+    const last = sorted[sorted.length - 1]
+
+    return first === last ? `${first}. kl.` : `${first}.–${last}. kl.`
   }
 
   return (
-    <div className="space-y-6">
+    <div>
+      <div className="mb-6 rounded-xl bg-sand p-4">
+        <p className="mb-3 text-sm font-semibold text-navy">
+          Atrisināti: {solvedCount} / {problems.length} uzdevumi
+        </p>
+        <div className="h-2 w-full rounded-full bg-muted/30">
+          <div
+            className="h-2 rounded-full bg-sage transition-all duration-300"
+            style={{ width: `${(solvedCount / problems.length) * 100}%` }}
+          />
+        </div>
+      </div>
+
       {problems.map((problem, index) => {
         const difficulty = Math.max(1, Math.min(5, Number(problem.difficulty) || 1))
+        const isSolved = solvedIds.has(problem.id)
+        const hasSolution = Boolean(problem.solution && problem.solution.trim())
+        const isOpen = Boolean(openSolutions[problem.id])
+
         return (
-          <article key={problem.id || index} className="rounded-xl bg-sand p-6 shadow-sm">
-            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-              <p className="text-sm font-semibold text-teal">Uzdevums {index + 1}</p>
-              {problem.source && (
-                <span className="rounded-full bg-teal/20 px-3 py-1 text-xs font-semibold text-teal">
-                  {problem.source}
+          <article key={problem.id || index} className="mb-4 rounded-xl bg-sand p-6 shadow-sm">
+            <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+              <p className="text-lg font-bold text-navy">Uzdevums {index + 1}</p>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="rounded-full bg-teal px-2 py-1 text-xs text-white">
+                  {formatGrades(problem.grades)}
                 </span>
+
+                <div className="flex items-center gap-1" aria-label={`Grūtība: ${difficulty} no 5`}>
+                  {Array.from({ length: 5 }).map((_, dotIndex) => {
+                    const isFilled = dotIndex < difficulty
+                    return (
+                      <svg
+                        key={dotIndex}
+                        viewBox="0 0 12 12"
+                        className={isFilled ? 'h-3 w-3 text-teal' : 'h-3 w-3 text-muted'}
+                        fill="currentColor"
+                        aria-hidden="true"
+                      >
+                        <circle cx="6" cy="6" r="5" />
+                      </svg>
+                    )
+                  })}
+                </div>
+
+                {problem.source && (
+                  <span className="rounded-full bg-amber-100 px-2 py-1 text-xs text-navy">
+                    {problem.source}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <MathContent content={problem.problem || problem.text} />
+
+            {problem.imageUrl && (
+              <img
+                src={problem.imageUrl}
+                alt={`Uzdevuma ${index + 1} ilustrācija`}
+                className="my-4 w-full max-w-md rounded-lg"
+              />
+            )}
+
+            <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+              {hasSolution ? (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setOpenSolutions((prev) => ({
+                      ...prev,
+                      [problem.id]: !prev[problem.id],
+                    }))
+                  }
+                  className="rounded-lg border border-teal px-4 py-2 text-sm text-teal transition hover:bg-teal hover:text-cream"
+                >
+                  {isOpen ? 'Paslēpt atrisinājumu' : 'Rādīt atrisinājumu'}
+                </button>
+              ) : (
+                <div />
               )}
-            </div>
 
-            <MathContent content={problem.problem} />
-
-            <div className="mt-5 flex items-center gap-2">
-              {Array.from({ length: 5 }).map((_, dotIndex) => (
-                <span
-                  key={dotIndex}
+              <div className="text-right">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSolvedIds((prev) => {
+                      const next = new Set(prev)
+                      if (next.has(problem.id)) {
+                        next.delete(problem.id)
+                      } else {
+                        next.add(problem.id)
+                      }
+                      return next
+                    })
+                  }
                   className={[
-                    'h-3 w-3 rounded-full',
-                    dotIndex < difficulty ? 'bg-teal' : 'bg-muted/30',
+                    'rounded-lg px-4 py-2 text-sm transition',
+                    isSolved
+                      ? 'bg-sage text-cream'
+                      : 'border border-sage text-sage hover:bg-sage hover:text-cream',
                   ].join(' ')}
-                />
-              ))}
+                >
+                  {isSolved ? 'Atrisināju ✓' : 'Atrisināju ✓'}
+                </button>
+                <p
+                  className={[
+                    'mt-1 text-xs text-sage transition-opacity duration-500',
+                    isSolved ? 'opacity-100' : 'opacity-0',
+                  ].join(' ')}
+                >
+                  Labi izdarīts! 🎉
+                </p>
+              </div>
             </div>
+
+            {hasSolution && (
+              <div
+                className={[
+                  'overflow-hidden transition-all duration-300',
+                  isOpen ? 'mt-3 max-h-[1200px]' : 'max-h-0',
+                ].join(' ')}
+              >
+                <div className="rounded-lg border-l-4 border-sage bg-amber-50 p-4">
+                  <MathContent content={problem.solution} />
+                </div>
+              </div>
+            )}
           </article>
         )
       })}
