@@ -120,7 +120,7 @@ export default function QuizTab({ topicId }) {
               <MathContent content={q.question} />
             </div>
 
-            <div className="space-y-0">
+            <div className="flex flex-col gap-2">
               {q.options?.map((option, optionIndex) => {
                 const isCorrectOption = q.correct === optionIndex
                 const isSelected = entry?.selectedIndex === optionIndex
@@ -128,7 +128,7 @@ export default function QuizTab({ topicId }) {
                 const showWrongSelected = answered && isSelected && !entry.isCorrect
 
                 let btnClass =
-                  'flex w-full items-center justify-between gap-3 border px-4 py-3 text-left transition rounded-xl mb-2 '
+                  'flex w-full items-center justify-between gap-3 border px-4 py-3 text-left transition rounded-xl [&_.katex]:my-0 '
 
                 if (!answered) {
                   btnClass +=
