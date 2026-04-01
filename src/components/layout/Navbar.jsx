@@ -5,7 +5,7 @@ export default function Navbar() {
     <nav className="fixed inset-x-0 top-0 z-50 h-16 bg-navy">
       <div className="mx-auto flex h-full w-full max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link to="/" className="text-2xl font-bold text-white">
-          OlimpMath
+          Olimpiādes matemātika
         </Link>
 
         <div className="hidden items-center gap-6 md:flex">

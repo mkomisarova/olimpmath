@@ -30,14 +30,14 @@ export default function HomePage() {
       <section className="bg-navy py-20">
         <div className="mx-auto max-w-6xl px-4 text-center sm:px-6 lg:px-8">
           <h1 className="mb-4 text-4xl font-bold text-cream md:text-5xl">
-            Apgūsti matemātikas olimpiādi
+            Teorija un prakse matemātikas olimpiādēm
           </h1>
-          <p className="mb-8 text-lg text-teal">
+          <p className="mb-8 text-lg text-sand">
             Teorija, uzdevumi un viktorīnas latviešu valodā
           </p>
           <Link
             to="/teorija"
-            className="inline-block rounded-full bg-coral px-8 py-3 font-semibold text-cream transition-opacity hover:opacity-90"
+            className="inline-block rounded-full bg-teal px-8 py-3 font-semibold text-white transition-opacity hover:opacity-90"
           >
             Sākt mācīties
           </Link>
