@@ -3,6 +3,7 @@ import serviceAccount from './serviceAccount.json' with { type: 'json' }
 import pirmSolvedExamplesFromPdf from './pirmrezinatajiPdfSolvedExamples.js'
 import dirichletSolvedExamplesFromPdf from './dirichletPdfSolvedExamples.js'
 import virknesSolvedExamplesFromPdf from './virknesPdfSolvedExamples.js'
+import { quizQuestionsByTopic } from './quizQuestionsSeedData.js'
 
 async function updateSolvedExamples(db) {
   await db.collection('topics').doc('pirmrezinataji').update({
@@ -19,6 +20,17 @@ async function updateSolvedExamples(db) {
   console.log('Updated solvedExamples for virknes')
 }
 
+async function seedQuizQuestions(db) {
+  const topicOrder = ['dalamiba', 'pirmrezinataji', 'dirichlet', 'virknes']
+  for (const topicId of topicOrder) {
+    const questions = quizQuestionsByTopic[topicId]
+    for (const question of questions) {
+      await db.collection('topics').doc(topicId).collection('quizQuestions').doc(question.id).set(question)
+    }
+    console.log(`Quiz questions seeded for: ${topicId}`)
+  }
+}
+
 async function seed() {
   try {
     admin.initializeApp({
@@ -28,6 +40,7 @@ async function seed() {
     const db = admin.firestore()
 
     await updateSolvedExamples(db)
+    await seedQuizQuestions(db)
 
     console.log('Solved examples updated successfully')
     process.exit(0)
