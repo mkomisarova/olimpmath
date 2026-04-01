@@ -30,7 +30,7 @@ export default function HomePage() {
       <section className="bg-navy py-20">
         <div className="mx-auto max-w-6xl px-4 text-center sm:px-6 lg:px-8">
           <h1 className="mb-8 text-2xl font-semibold text-sand md:text-3xl">
-            Teorija, uzdevumi un viktorīnas
+            Teorija, uzdevumi un testi
           </h1>
           <Link
             to="/teorija"

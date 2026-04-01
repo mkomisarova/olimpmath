@@ -52,8 +52,8 @@ export const quizQuestionsByTopic = {
   pirmrezinataji: [
     {
       id: 'q1',
-      question: 'Cik dalītāju ir skaitlim $1$?',
-      options: ['Nulle', 'Viens', 'Divi', 'Bezgalīgi daudz'],
+      question: 'Kādi ir skaitļa $20$ dažādie pirmreizinātāji?',
+      options: ['$1; 2; 4; 5; 10; 20$', '$2$ un $5$', '$2; 2$ un $5$', '$4$ un $5$'],
       correct: 1,
     },
     {

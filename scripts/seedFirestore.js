@@ -31,6 +31,15 @@ async function seedQuizQuestions(db) {
   }
 }
 
+async function updatePirmrezinatajiQuizQ1(db) {
+  await db.collection('topics').doc('pirmrezinataji').collection('quizQuestions').doc('q1').update({
+    question: 'Kādi ir skaitļa $20$ dažādie pirmreizinātāji?',
+    options: ['$1; 2; 4; 5; 10; 20$', '$2$ un $5$', '$2; 2$ un $5$', '$4$ un $5$'],
+    correct: 1,
+  })
+  console.log('Updated pirmrezinataji quizQuestions q1')
+}
+
 async function seed() {
   try {
     admin.initializeApp({
@@ -41,6 +50,7 @@ async function seed() {
 
     await updateSolvedExamples(db)
     await seedQuizQuestions(db)
+    await updatePirmrezinatajiQuizQ1(db)
 
     console.log('Solved examples updated successfully')
     process.exit(0)

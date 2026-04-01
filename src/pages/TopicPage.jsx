@@ -19,8 +19,8 @@ const SUBJECT_LABELS = {
 
 const TABS = [
   { id: 'teorija', label: 'Teorija' },
-  { id: 'piem', label: 'Atrisināti piemēri' },
-  { id: 'viktorina', label: 'Viktorīna' },
+  { id: 'piem', label: 'Atrisinātie piemēri' },
+  { id: 'tests', label: 'Tests' },
   { id: 'uzdevumi', label: 'Uzdevumi' },
 ]
 
@@ -66,7 +66,7 @@ export default function TopicPage() {
         <div className="mx-auto max-w-4xl">
           {activeTab === 'teorija' && <TheoryTab topic={topic} />}
           {activeTab === 'piem' && <ExamplesTab topic={topic} />}
-          {activeTab === 'viktorina' && <QuizTab topicId={topic.id} />}
+          {activeTab === 'tests' && <QuizTab topicId={topic.id} />}
           {activeTab === 'uzdevumi' && <ProblemsTab topicId={topic.id} />}
         </div>
       </section>

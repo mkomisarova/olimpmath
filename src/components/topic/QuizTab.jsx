@@ -99,7 +99,7 @@ export default function QuizTab({ topicId }) {
   }
 
   if (questions.length === 0) {
-    return <p className="py-8 text-center text-muted">Viktorīna drīzumā būs pieejama</p>
+    return <p className="py-8 text-center text-muted">Tests drīzumā būs pieejams</p>
   }
 
   return (
@@ -122,9 +122,7 @@ export default function QuizTab({ topicId }) {
 
             <div className="flex flex-col gap-2">
               {q.options?.map((option, optionIndex) => {
-                const isCorrectOption = q.correct === optionIndex
                 const isSelected = entry?.selectedIndex === optionIndex
-                const showCorrectReveal = answered && isCorrectOption
                 const showWrongSelected = answered && isSelected && !entry.isCorrect
 
                 let btnClass =
@@ -133,7 +131,7 @@ export default function QuizTab({ topicId }) {
                 if (!answered) {
                   btnClass +=
                     'border-sand bg-cream text-navy hover:border-teal hover:text-teal'
-                } else if (showCorrectReveal) {
+                } else if (isSelected && entry.isCorrect) {
                   btnClass += 'border-sage bg-sage text-white'
                 } else if (showWrongSelected) {
                   btnClass += 'border-coral bg-coral text-white'
@@ -142,8 +140,7 @@ export default function QuizTab({ topicId }) {
                     'pointer-events-none cursor-default border-sand/50 bg-cream/60 text-navy/50'
                 }
 
-                const showCheckSelectedCorrect = answered && isSelected && entry.isCorrect
-                const showCheckRevealCorrect = answered && showCorrectReveal && !isSelected
+                const showCheckCorrect = answered && isSelected && entry.isCorrect
 
                 return (
                   <button
@@ -156,7 +153,7 @@ export default function QuizTab({ topicId }) {
                     <span className="min-w-0 flex-1">
                       <InlineOptionMath text={option} />
                     </span>
-                    {showCheckSelectedCorrect && (
+                    {showCheckCorrect && (
                       <span className="shrink-0 text-lg leading-none" aria-hidden>
                         ✓
                       </span>
@@ -164,11 +161,6 @@ export default function QuizTab({ topicId }) {
                     {showWrongSelected && (
                       <span className="shrink-0 text-lg leading-none" aria-hidden>
                         ✗
-                      </span>
-                    )}
-                    {showCheckRevealCorrect && (
-                      <span className="shrink-0 text-lg leading-none" aria-hidden>
-                        ✓
                       </span>
                     )}
                   </button>
@@ -209,7 +201,7 @@ export default function QuizTab({ topicId }) {
           onClick={resetQuiz}
           className="shrink-0 rounded-lg border border-teal px-3 py-1 text-sm text-teal transition hover:bg-teal hover:text-white"
         >
-          Atiestatīt
+          Atiestatīt testu
         </button>
       </div>
     </div>
