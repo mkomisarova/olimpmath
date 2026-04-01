@@ -213,4 +213,53 @@ export const quizQuestionsByTopic = {
       correct: 0,
     },
   ],
+  skaitlapieraksts: [
+    {
+      id: 'q1',
+      question: 'Cik ciparu ir kopā?',
+      options: ['$8$', '$9$', '$10$', '$11$'],
+      correct: 2,
+    },
+    {
+      id: 'q2',
+      question: 'Kurš no šiem skaitļiem NAV naturāls skaitlis?',
+      options: ['$1$', '$0$', '$100$', '$999$'],
+      correct: 1,
+    },
+    {
+      id: 'q3',
+      question: 'Kā izsaka divciparu skaitli $\\overline{ab}$ algebriskā formā?',
+      options: ['$a + b$', '$a \\cdot b$', '$10a + b$', '$100a + b$'],
+      correct: 2,
+    },
+    {
+      id: 'q4',
+      question: 'Kāds ir skaitļa $\\overline{abcab}$ algebriskais pieraksts?',
+      options: [
+        '$1001 \\cdot \\overline{ab} + 100c$',
+        '$100 \\cdot \\overline{ab} + 1001c$',
+        '$\\overline{ab} + 100c + \\overline{ab}$',
+        '$1000 \\cdot \\overline{abc} + \\overline{ab}$',
+      ],
+      correct: 0,
+    },
+    {
+      id: 'q5',
+      question:
+        'Leonards pareizina trīsciparu skaitli $\\overline{abc}$ ar $2$ un pieraksta galā sākotnējo skaitli. Ar ko vienāds iegūtais skaitlis?',
+      options: [
+        '$2000 \\cdot \\overline{abc} + \\overline{abc}$',
+        '$2001 \\cdot \\overline{abc}$',
+        '$200 \\cdot \\overline{abc} + \\overline{abc}$',
+        '$2 \\cdot \\overline{abc} + 1000$',
+      ],
+      correct: 1,
+    },
+    {
+      id: 'q6',
+      question: 'Četrciparu skaitlim pārliek ciparus citā secībā. Ar ko noteikti dalās abu skaitļu starpība?',
+      options: ['Ar $3$', 'Ar $7$', 'Ar $9$', 'Ar $11$'],
+      correct: 2,
+    },
+  ],
 }

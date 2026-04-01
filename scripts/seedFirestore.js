@@ -3,7 +3,18 @@ import serviceAccount from './serviceAccount.json' with { type: 'json' }
 import pirmSolvedExamplesFromPdf from './pirmrezinatajiPdfSolvedExamples.js'
 import dirichletSolvedExamplesFromPdf from './dirichletPdfSolvedExamples.js'
 import virknesSolvedExamplesFromPdf from './virknesPdfSolvedExamples.js'
+import skaitlapierakstsSolvedExamplesFromPdf from './skaitlapierakstsPdfSolvedExamples.js'
+import skaitlapierakstsTopicDoc from './skaitlapierakstsTopicSeed.js'
 import { quizQuestionsByTopic } from './quizQuestionsSeedData.js'
+
+const topicsToSeed = [{ id: 'skaitlapieraksts', data: skaitlapierakstsTopicDoc }]
+
+async function seedTopics(db) {
+  for (const { id, data } of topicsToSeed) {
+    await db.collection('topics').doc(id).set(data, { merge: false })
+    console.log(`Topic document set: ${id}`)
+  }
+}
 
 async function updateSolvedExamples(db) {
   await db.collection('topics').doc('pirmrezinataji').update({
@@ -18,10 +29,14 @@ async function updateSolvedExamples(db) {
     solvedExamples: virknesSolvedExamplesFromPdf,
   })
   console.log('Updated solvedExamples for virknes')
+  await db.collection('topics').doc('skaitlapieraksts').update({
+    solvedExamples: skaitlapierakstsSolvedExamplesFromPdf,
+  })
+  console.log('Updated solvedExamples for skaitlapieraksts')
 }
 
 async function seedQuizQuestions(db) {
-  const topicOrder = ['dalamiba', 'pirmrezinataji', 'dirichlet', 'virknes']
+  const topicOrder = ['dalamiba', 'pirmrezinataji', 'dirichlet', 'virknes', 'skaitlapieraksts']
   for (const topicId of topicOrder) {
     const questions = quizQuestionsByTopic[topicId]
     for (const question of questions) {
@@ -48,6 +63,7 @@ async function seed() {
 
     const db = admin.firestore()
 
+    await seedTopics(db)
     await updateSolvedExamples(db)
     await seedQuizQuestions(db)
     await updatePirmrezinatajiQuizQ1(db)
