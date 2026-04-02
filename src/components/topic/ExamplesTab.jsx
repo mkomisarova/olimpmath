@@ -11,6 +11,7 @@ const topicGrades = {
   'matematiskas-indukcijas-metode': [10, 11, 12],
   'piemers-pretpiemers': [5, 6, 7, 8, 9],
   polinomi: [10, 11, 12],
+  'nevienadibu-pieradisana': [9, 10, 11, 12],
   'invariantu-metode': [5, 6, 7, 8, 9, 10, 11, 12],
 }
 
@@ -40,6 +41,11 @@ const exampleGradeOverrides = {
     ex22: [10, 11, 12],
     ex23: [10, 11, 12],
     ex24: [10, 11, 12],
+  },
+  virknes: {
+    ex10: [5, 6, 7, 8, 9],
+    ex11: [5, 6, 7, 8],
+    ex12: [5, 6, 7, 8],
   },
   dirichlet: {
     ex1: [7, 8, 9],
@@ -75,6 +81,11 @@ const exampleGradeOverrides = {
     ex15: [9, 10, 11, 12],
     ex16: [9, 10, 11, 12],
     ex17: [9, 10, 11, 12],
+    ex18: [9, 10, 11, 12],
+    ex19: [9, 10, 11, 12],
+    ex20: [9, 10, 11, 12],
+    ex21: [9, 10, 11, 12],
+    ex22: [9, 10, 11, 12],
   },
 }
 
@@ -83,7 +94,10 @@ export function getTopicGrades(topicId) {
   return topicGrades[topicId] ?? []
 }
 
-function getGradesForExample(topicId, exampleId) {
+function getGradesForExample(topicId, exampleId, example) {
+  if (Array.isArray(example?.grades) && example.grades.length > 0) {
+    return example.grades
+  }
   const override = exampleGradeOverrides[topicId]?.[exampleId]
   if (override) return override
   return getTopicGrades(topicId)
@@ -122,7 +136,7 @@ export default function ExamplesTab({ topic }) {
       {examples.map((example, index) => {
         const exampleId = example.id || `example-${index}`
         const isOpen = Boolean(openSolutions[exampleId])
-        const grades = example.id ? getGradesForExample(topicId, example.id) : getTopicGrades(topicId)
+        const grades = example.id ? getGradesForExample(topicId, example.id, example) : getTopicGrades(topicId)
         const gradeLabel = formatGradeRange(grades)
 
         return (

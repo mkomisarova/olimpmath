@@ -12,6 +12,8 @@ import polinomiTopicSeed from './polinomiTopicSeed.js'
 import invariantuMetodeTopicSeed from './invariantuMetodeTopicSeed.js'
 import { quizQuestionsByTopic } from './quizQuestionsSeedData.js'
 import { additionalNewTopicQuizQuestionsByTopic } from './additionalNewTopicQuizSeed.js'
+import { newInvariantiExamples, newVirknesExamples } from './appendExamplesSeedData.js'
+import nevienadibuPieradisanaTopicSeed from './nevienadibuPieradisanaTopicSeed.js'
 
 const newTopicIdsForExtraQuiz = [
   'induktivi-spriedumi',
@@ -88,6 +90,27 @@ async function updatePirmrezinatajiQuizQ1(db) {
 }
 
 /** Adds q7–q16 (or any listed ids) only for ids not already present — does not overwrite. */
+async function seedNewExamplesAndTopic(db) {
+  const virknesRef = db.collection('topics').doc('virknes')
+  const virknesDoc = await virknesRef.get()
+  const existingExamples = virknesDoc.data()?.solvedExamples || []
+  await virknesRef.update({
+    solvedExamples: [...existingExamples, ...newVirknesExamples],
+  })
+  console.log('Appended examples ex10–ex12 to virknes')
+
+  const invariantiRef = db.collection('topics').doc('invariantu-metode')
+  const invariantiDoc = await invariantiRef.get()
+  const existingInvarianti = invariantiDoc.data()?.solvedExamples || []
+  await invariantiRef.update({
+    solvedExamples: [...existingInvarianti, ...newInvariantiExamples],
+  })
+  console.log('Appended examples ex18–ex22 to invariantu-metode')
+
+  await db.collection('topics').doc('nevienadibu-pieradisana').set(nevienadibuPieradisanaTopicSeed, { merge: false })
+  console.log('Topic document set: nevienadibu-pieradisana')
+}
+
 async function seedNewTopicQuizzes(db) {
   for (const topicId of newTopicIdsForExtraQuiz) {
     const questions = additionalNewTopicQuizQuestionsByTopic[topicId]
@@ -120,6 +143,7 @@ async function seed() {
     await seedQuizQuestions(db)
     await updatePirmrezinatajiQuizQ1(db)
     await seedNewTopicQuizzes(db)
+    await seedNewExamplesAndTopic(db)
 
     console.log('Solved examples updated successfully')
     process.exit(0)
