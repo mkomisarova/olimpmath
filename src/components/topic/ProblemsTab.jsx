@@ -1,13 +1,20 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { getTopicProblems } from '../../firebase/content'
+import { useAuth } from '../../contexts/AuthContext'
+import { useProgress } from '../../hooks/useProgress'
 import MathContent from '../ui/MathContent'
 import LoadingSpinner from '../ui/LoadingSpinner'
 
 export default function ProblemsTab({ topicId }) {
+  const { userData } = useAuth()
+  const { markProblemSolved, isLoggedIn } = useProgress()
   const [problems, setProblems] = useState([])
   const [loading, setLoading] = useState(true)
   const [openSolutions, setOpenSolutions] = useState({})
   const [solvedIds, setSolvedIds] = useState(new Set())
+  const [guestToastVisible, setGuestToastVisible] = useState(false)
+  const guestToastShownRef = useRef(false)
 
   const solvedCount = useMemo(() => {
     return problems.filter((problem) => solvedIds.has(problem.id)).length
@@ -24,6 +31,7 @@ export default function ProblemsTab({ topicId }) {
           setProblems(data)
           setOpenSolutions({})
           setSolvedIds(new Set())
+          guestToastShownRef.current = false
         }
       } finally {
         if (isMounted) {
@@ -40,6 +48,25 @@ export default function ProblemsTab({ topicId }) {
       isMounted = false
     }
   }, [topicId])
+
+  useEffect(() => {
+    if (loading || problems.length === 0) return
+    const fromServer = userData?.progress?.problemsSolved ?? []
+    const validIds = new Set(problems.map((p) => p.id).filter(Boolean))
+    setSolvedIds((prev) => {
+      const next = new Set(prev)
+      fromServer.forEach((id) => {
+        if (validIds.has(id)) next.add(id)
+      })
+      return next
+    })
+  }, [loading, problems, userData])
+
+  useEffect(() => {
+    if (!guestToastVisible) return
+    const id = window.setTimeout(() => setGuestToastVisible(false), 4000)
+    return () => window.clearTimeout(id)
+  }, [guestToastVisible])
 
   if (loading) {
     return <LoadingSpinner />
@@ -78,6 +105,15 @@ export default function ProblemsTab({ topicId }) {
 
   return (
     <div>
+      {guestToastVisible ? (
+        <div className="fixed bottom-4 right-4 z-50 max-w-xs rounded-xl bg-navy p-4 text-white shadow-lg">
+          <p className="text-sm">Izveido kontu, lai saglabātu progresu!</p>
+          <Link to="/registreties" className="mt-2 inline-block text-sm font-semibold text-teal hover:underline">
+            Reģistrēties
+          </Link>
+        </div>
+      ) : null}
+
       <div className="mb-6 rounded-xl bg-sand p-4">
         <p className="mb-3 text-sm font-semibold text-navy">
           Atrisināti: {solvedCount} / {problems.length} uzdevumi
@@ -162,17 +198,24 @@ export default function ProblemsTab({ topicId }) {
               <div className="text-right">
                 <button
                   type="button"
-                  onClick={() =>
+                  onClick={() => {
                     setSolvedIds((prev) => {
                       const next = new Set(prev)
-                      if (next.has(problem.id)) {
+                      const wasSolved = next.has(problem.id)
+                      if (wasSolved) {
                         next.delete(problem.id)
                       } else {
                         next.add(problem.id)
+                        if (isLoggedIn) {
+                          markProblemSolved(problem.id)
+                        } else if (!guestToastShownRef.current) {
+                          guestToastShownRef.current = true
+                          setGuestToastVisible(true)
+                        }
                       }
                       return next
                     })
-                  }
+                  }}
                   className={[
                     'rounded-lg px-4 py-2 text-sm transition',
                     isSolved
@@ -180,7 +223,7 @@ export default function ProblemsTab({ topicId }) {
                       : 'border border-sage text-sage hover:bg-sage hover:text-cream',
                   ].join(' ')}
                 >
-                  {isSolved ? 'Atrisināju ✓' : 'Atrisināju ✓'}
+                  Atrisināju ✓
                 </button>
                 <p
                   className={[

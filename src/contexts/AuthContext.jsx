@@ -51,6 +51,12 @@ export default function AuthProvider({ children }) {
     setUserData(null)
   }, [])
 
+  const refreshUserData = useCallback(async () => {
+    if (!currentUser?.uid) return
+    const data = await getUserData(currentUser.uid)
+    setUserData(data)
+  }, [currentUser])
+
   const value = useMemo(
     () => ({
       currentUser,
@@ -59,8 +65,9 @@ export default function AuthProvider({ children }) {
       login,
       register,
       logout,
+      refreshUserData,
     }),
-    [currentUser, userData, loading, login, register, logout],
+    [currentUser, userData, loading, login, register, logout, refreshUserData],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

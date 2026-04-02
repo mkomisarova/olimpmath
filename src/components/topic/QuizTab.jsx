@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import ReactMarkdown from 'react-markdown'
 import rehypeKatex from 'rehype-katex'
 import remarkMath from 'remark-math'
 import { getTopicQuiz } from '../../firebase/content'
+import { useProgress } from '../../hooks/useProgress'
 import MathContent from '../ui/MathContent'
 import LoadingSpinner from '../ui/LoadingSpinner'
 
@@ -28,6 +30,8 @@ export default function QuizTab({ topicId }) {
   const [questions, setQuestions] = useState([])
   const [loading, setLoading] = useState(true)
   const [answeredQuestions, setAnsweredQuestions] = useState(() => new Map())
+  const [guestNudgeDismissed, setGuestNudgeDismissed] = useState(false)
+  const { saveQuizScore, getQuizScore, isLoggedIn } = useProgress()
 
   useEffect(() => {
     let isMounted = true
@@ -42,6 +46,7 @@ export default function QuizTab({ topicId }) {
           )
           setQuestions(sorted)
           setAnsweredQuestions(new Map())
+          setGuestNudgeDismissed(false)
         }
       } finally {
         if (isMounted) {
@@ -80,6 +85,7 @@ export default function QuizTab({ topicId }) {
 
   const resetQuiz = useCallback(() => {
     setAnsweredQuestions(new Map())
+    setGuestNudgeDismissed(false)
   }, [])
 
   const correctCount = useMemo(() => {
@@ -91,8 +97,18 @@ export default function QuizTab({ topicId }) {
     return n
   }, [questions, answeredQuestions])
 
+  const allAnswered =
+    questions.length > 0 && answeredQuestions.size === questions.length
+
+  useEffect(() => {
+    if (!allAnswered || !topicId) return
+    saveQuizScore(topicId, correctCount, questions.length)
+  }, [allAnswered, topicId, correctCount, questions.length, saveQuizScore])
+
   const progressPct =
     questions.length > 0 ? Math.round((correctCount / questions.length) * 100) : 0
+
+  const bestScore = topicId ? getQuizScore(topicId) : null
 
   if (loading) {
     return <LoadingSpinner />
@@ -109,13 +125,8 @@ export default function QuizTab({ topicId }) {
         const answered = entry !== undefined
 
         return (
-          <div
-            key={q.id}
-            className="mb-4 rounded-xl bg-sand p-6 shadow-sm"
-          >
-            <p className="mb-2 text-sm font-bold text-teal">
-              Jautājums {qIndex + 1}
-            </p>
+          <div key={q.id} className="mb-4 rounded-xl bg-sand p-6 shadow-sm">
+            <p className="mb-2 text-sm font-bold text-teal">Jautājums {qIndex + 1}</p>
             <div className="mb-4 text-lg text-navy [&_.prose]:mb-0 [&_.prose>:last-child]:mb-0">
               <MathContent content={q.question} />
             </div>
@@ -181,28 +192,57 @@ export default function QuizTab({ topicId }) {
         )
       })}
 
-      <div
-        className="mt-8 flex items-center justify-between gap-4 rounded-xl border border-[#C9B896] bg-sand px-6 py-3"
-      >
-        <div className="flex shrink-0 items-baseline gap-2">
-          <span className="text-sm text-muted">Rezultāts:</span>
-          <span className="text-base font-bold text-navy">
-            {correctCount} / {questions.length}
-          </span>
+      <div>
+        <div className="mt-8 flex items-center justify-between gap-4 rounded-xl border border-[#C9B896] bg-sand px-6 py-3">
+          <div className="flex shrink-0 items-baseline gap-2">
+            <span className="text-sm text-muted">Rezultāts:</span>
+            <span className="text-base font-bold text-navy">
+              {correctCount} / {questions.length}
+            </span>
+          </div>
+          <div className="h-2 w-[40%] shrink-0 rounded-full bg-muted/20">
+            <div
+              className="h-2 rounded-full bg-sage transition-[width] duration-300"
+              style={{ width: `${progressPct}%` }}
+            />
+          </div>
+          <button
+            type="button"
+            onClick={resetQuiz}
+            className="shrink-0 rounded-lg border border-teal px-3 py-1 text-sm text-teal transition hover:bg-teal hover:text-white"
+          >
+            Atiestatīt testu
+          </button>
         </div>
-        <div className="h-2 w-[40%] shrink-0 rounded-full bg-muted/20">
-          <div
-            className="h-2 rounded-full bg-sage transition-[width] duration-300"
-            style={{ width: `${progressPct}%` }}
-          />
-        </div>
-        <button
-          type="button"
-          onClick={resetQuiz}
-          className="shrink-0 rounded-lg border border-teal px-3 py-1 text-sm text-teal transition hover:bg-teal hover:text-white"
-        >
-          Atiestatīt testu
-        </button>
+
+        {isLoggedIn && bestScore ? (
+          <p className="mt-2 text-xs text-muted">
+            Labākais rezultāts: {bestScore.score} / {bestScore.total}
+          </p>
+        ) : null}
+
+        {allAnswered && !isLoggedIn && !guestNudgeDismissed ? (
+          <div className="relative mt-4 rounded-xl border border-teal/30 bg-sand p-4 pr-10">
+            <button
+              type="button"
+              aria-label="Aizvērt"
+              onClick={() => setGuestNudgeDismissed(true)}
+              className="absolute right-3 top-3 rounded p-1 text-lg leading-none text-navy/60 transition hover:bg-white/20 hover:text-navy"
+            >
+              ×
+            </button>
+            <p className="text-sm text-navy">💡 Tavs rezultāts netiks saglabāts.</p>
+            <p className="mt-1 text-xs text-muted">
+              Izveido kontu, lai sekotu saviem rezultātiem un redzētu progresu!
+            </p>
+            <Link
+              to="/registreties"
+              className="mt-3 inline-block rounded-lg bg-teal px-4 py-2 text-sm text-white transition hover:opacity-90"
+            >
+              Reģistrēties
+            </Link>
+          </div>
+        ) : null}
       </div>
     </div>
   )

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import ExamplesTab from '../components/topic/ExamplesTab'
 import ProblemsTab from '../components/topic/ProblemsTab'
@@ -7,6 +7,7 @@ import TheoryTab from '../components/topic/TheoryTab'
 import ErrorMessage from '../components/ui/ErrorMessage'
 import LoadingSpinner from '../components/ui/LoadingSpinner'
 import TabBar from '../components/ui/TabBar'
+import { useProgress } from '../hooks/useProgress'
 import { useTopic } from '../hooks/useTopic'
 
 const SUBJECT_LABELS = {
@@ -29,6 +30,19 @@ export default function TopicPage() {
   const { slug } = useParams()
   const { topic, loading, error } = useTopic(slug)
   const [activeTab, setActiveTab] = useState('teorija')
+  const { markTopicRead, isTopicRead } = useProgress()
+  const theoryMarkedForVisitRef = useRef(false)
+
+  useEffect(() => {
+    theoryMarkedForVisitRef.current = false
+  }, [topic?.id])
+
+  useEffect(() => {
+    if (activeTab !== 'teorija' || !topic?.id) return
+    if (theoryMarkedForVisitRef.current) return
+    theoryMarkedForVisitRef.current = true
+    markTopicRead(topic.id)
+  }, [activeTab, topic?.id, markTopicRead])
 
   if (loading) {
     return (
@@ -78,7 +92,14 @@ export default function TopicPage() {
           <span className="mb-4 inline-block rounded-full bg-teal px-3 py-1 text-sm font-semibold text-cream">
             {subjectLabel}
           </span>
-          <h1 className="text-4xl font-bold text-cream">{topic.displayName}</h1>
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-4xl font-bold text-cream">{topic.displayName}</h1>
+            {isTopicRead(topic.id) ? (
+              <span className="ml-3 inline-flex items-center gap-1 rounded-full bg-sage/20 px-3 py-1 text-xs text-sage">
+                ✓ Izlasīts
+              </span>
+            ) : null}
+          </div>
         </div>
       </section>
 
