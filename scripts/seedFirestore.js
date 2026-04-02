@@ -14,6 +14,7 @@ import { quizQuestionsByTopic } from './quizQuestionsSeedData.js'
 import { additionalNewTopicQuizQuestionsByTopic } from './additionalNewTopicQuizSeed.js'
 import { newInvariantiExamples, newVirknesExamples } from './appendExamplesSeedData.js'
 import nevienadibuPieradisanaTopicSeed from './nevienadibuPieradisanaTopicSeed.js'
+import { kongruencesQuiz, kongruencesTopicData } from './kongruencesSeedData.js'
 
 const newTopicIdsForExtraQuiz = [
   'induktivi-spriedumi',
@@ -111,6 +112,15 @@ async function seedNewExamplesAndTopic(db) {
   console.log('Topic document set: nevienadibu-pieradisana')
 }
 
+async function seedKongruences(db) {
+  await db.collection('topics').doc('kongruences').set(kongruencesTopicData, { merge: false })
+  console.log('Topic document set: kongruences')
+  for (const q of kongruencesQuiz) {
+    await db.collection('topics').doc('kongruences').collection('quizQuestions').doc(q.id).set(q)
+  }
+  console.log('Quiz questions seeded for: kongruences')
+}
+
 async function seedNewTopicQuizzes(db) {
   for (const topicId of newTopicIdsForExtraQuiz) {
     const questions = additionalNewTopicQuizQuestionsByTopic[topicId]
@@ -144,6 +154,7 @@ async function seed() {
     await updatePirmrezinatajiQuizQ1(db)
     await seedNewTopicQuizzes(db)
     await seedNewExamplesAndTopic(db)
+    await seedKongruences(db)
 
     console.log('Solved examples updated successfully')
     process.exit(0)

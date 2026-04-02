@@ -3,6 +3,7 @@ import MathContent from '../ui/MathContent'
 
 const topicGrades = {
   dalamiba: [5, 6, 7, 8],
+  kongruences: [9, 10, 11, 12],
   pirmrezinataji: [5, 6, 7, 8, 9, 10, 11, 12],
   dirichlet: [7, 8, 9, 10, 11, 12],
   virknes: [9, 10, 11, 12],
