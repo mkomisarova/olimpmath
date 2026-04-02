@@ -3,6 +3,7 @@ import PageLayout from './components/layout/PageLayout'
 import ScrollToTop from './components/layout/ScrollToTop'
 import HomePage from './pages/HomePage'
 import LoginPage from './pages/LoginPage'
+import ProfilePage from './pages/ProfilePage'
 import RegisterPage from './pages/RegisterPage'
 import TheoryListPage from './pages/TheoryListPage'
 import TopicPage from './pages/TopicPage'
@@ -41,6 +42,7 @@ export default function App() {
           <Route index element={<HomePage />} />
           <Route path="teorija" element={<TheoryListPage />} />
           <Route path="teorija/:slug" element={<TopicPage />} />
+          <Route path="profils" element={<ProfilePage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>
