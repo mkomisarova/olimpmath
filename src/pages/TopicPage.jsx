@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import ExamplesTab from '../components/topic/ExamplesTab'
 import ProblemsTab from '../components/topic/ProblemsTab'
 import QuizTab from '../components/topic/QuizTab'
@@ -25,6 +25,7 @@ const TABS = [
 ]
 
 export default function TopicPage() {
+  const navigate = useNavigate()
   const { slug } = useParams()
   const { topic, loading, error } = useTopic(slug)
   const [activeTab, setActiveTab] = useState('teorija')
@@ -53,6 +54,27 @@ export default function TopicPage() {
     <div className="bg-cream">
       <section className="bg-navy py-12">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="mb-4 flex w-fit cursor-pointer items-center gap-1 border-0 bg-transparent p-0 text-sm text-white/70 transition hover:text-white"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <path d="M15 19l-7-7 7-7" />
+            </svg>
+            Atpakaļ
+          </button>
           <span className="mb-4 inline-block rounded-full bg-teal px-3 py-1 text-sm font-semibold text-cream">
             {subjectLabel}
           </span>
