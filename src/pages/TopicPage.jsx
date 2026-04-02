@@ -12,6 +12,7 @@ import { useTopic } from '../hooks/useTopic'
 
 const SUBJECT_LABELS = {
   skaitlu_teorija: 'Skaitļu teorija',
+  geometrija: 'Ģeometrija',
   ģeometrija: 'Ģeometrija',
   algebra: 'Algebra',
   kombinatorika: 'Kombinatorika',
@@ -30,7 +31,7 @@ export default function TopicPage() {
   const { slug } = useParams()
   const { topic, loading, error } = useTopic(slug)
   const [activeTab, setActiveTab] = useState('teorija')
-  const { markTopicRead, isTopicRead } = useProgress()
+  const { markTopicRead, isTopicRead, getQuizScore } = useProgress()
   const theoryMarkedForVisitRef = useRef(false)
 
   useEffect(() => {
@@ -64,6 +65,19 @@ export default function TopicPage() {
 
   const subjectLabel = SUBJECT_LABELS[topic.subject] || 'Citi'
 
+  const quizScore = getQuizScore(topic.id)
+  let testsIndicator = null
+  if (quizScore) {
+    testsIndicator = quizScore.percentage === 100 ? 'done' : 'partial'
+  }
+
+  const tabIndicators = {
+    teorija: isTopicRead(topic.id) ? 'done' : null,
+    tests: testsIndicator,
+    piem: null,
+    uzdevumi: null,
+  }
+
   return (
     <div className="bg-cream">
       <section className="bg-navy py-12">
@@ -92,22 +106,15 @@ export default function TopicPage() {
           <span className="mb-4 inline-block rounded-full bg-teal px-3 py-1 text-sm font-semibold text-cream">
             {subjectLabel}
           </span>
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-4xl font-bold text-cream">{topic.displayName}</h1>
-            {isTopicRead(topic.id) ? (
-              <span className="ml-3 inline-flex items-center gap-1 rounded-full bg-sage/20 px-3 py-1 text-xs text-sage">
-                ✓ Izlasīts
-              </span>
-            ) : null}
-          </div>
+          <h1 className="text-4xl font-bold text-cream">{topic.displayName}</h1>
         </div>
       </section>
 
-      <TabBar tabs={TABS} activeTab={activeTab} onTabChange={setActiveTab} />
+      <TabBar tabs={TABS} activeTab={activeTab} onTabChange={setActiveTab} indicators={tabIndicators} />
 
       <section className="p-8">
         <div className="mx-auto max-w-4xl">
-          {activeTab === 'teorija' && <TheoryTab topic={topic} />}
+          {activeTab === 'teorija' && <TheoryTab topic={topic} topicId={topic.id} />}
           {activeTab === 'piem' && <ExamplesTab topic={topic} />}
           {activeTab === 'tests' && <QuizTab topicId={topic.id} />}
           {activeTab === 'uzdevumi' && <ProblemsTab topicId={topic.id} />}

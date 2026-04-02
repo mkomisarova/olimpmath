@@ -1,10 +1,38 @@
+import { useProgress } from '../../hooks/useProgress'
 import MathContent from '../ui/MathContent'
 
-export default function TheoryTab({ topic }) {
+function CheckIcon() {
+  return (
+    <svg
+      className="h-4 w-4 shrink-0 text-sage"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+    >
+      <path
+        d="M20 6L9 17l-5-5"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+export default function TheoryTab({ topic, topicId }) {
+  const { isTopicRead } = useProgress()
   const sections = topic?.theory?.sections || []
 
   return (
     <div className="space-y-8">
+      {isTopicRead(topicId) ? (
+        <div className="mb-6 flex items-center gap-1 border-b border-sand pb-4 text-sm text-sage">
+          <CheckIcon />
+          <span>Teorija izlasīta</span>
+        </div>
+      ) : null}
       {sections.map((section, index) => (
         <section key={section.title || index} className="rounded-xl bg-sand p-6">
           <h2 className="mb-4 text-2xl font-bold text-navy">{section.title}</h2>

@@ -1,9 +1,13 @@
-export default function TabBar({ tabs, activeTab, onTabChange }) {
+/**
+ * @param {Record<string, 'done' | 'partial' | null | undefined>} [indicators]
+ */
+export default function TabBar({ tabs, activeTab, onTabChange, indicators = {} }) {
   return (
     <div className="bg-sand">
       <div className="mx-auto flex max-w-4xl gap-2 overflow-x-auto px-4 pt-3 sm:px-6 lg:px-8">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id
+          const indicator = indicators[tab.id]
 
           return (
             <button
@@ -11,13 +15,22 @@ export default function TabBar({ tabs, activeTab, onTabChange }) {
               type="button"
               onClick={() => onTabChange(tab.id)}
               className={[
-                'rounded-t-lg px-4 py-2 text-sm font-semibold transition-colors md:text-base',
+                'inline-flex items-center gap-1.5 rounded-t-lg px-4 py-2 text-sm font-semibold transition-colors md:text-base',
                 isActive
                   ? 'bg-navy text-cream'
                   : 'text-muted hover:text-teal',
               ].join(' ')}
             >
-              {tab.label}
+              <span>{tab.label}</span>
+              {indicator === 'done' ? (
+                <span className="inline-block h-2 w-2 shrink-0 rounded-full bg-sage" aria-hidden />
+              ) : null}
+              {indicator === 'partial' ? (
+                <span
+                  className="inline-block h-2 w-2 shrink-0 rounded-full border-2 border-teal bg-transparent"
+                  aria-hidden
+                />
+              ) : null}
             </button>
           )
         })}

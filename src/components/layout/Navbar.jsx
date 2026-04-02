@@ -33,12 +33,33 @@ function PersonIcon({ className }) {
   )
 }
 
+function MobileAccountIcon() {
+  return (
+    <svg
+      className="h-5 w-5"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+    >
+      <path
+        d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"
+        stroke="currentColor"
+        strokeWidth="2"
+        fill="none"
+      />
+      <circle cx="12" cy="7" r="4" stroke="currentColor" strokeWidth="2" fill="none" />
+    </svg>
+  )
+}
+
 export default function Navbar() {
   const location = useLocation()
   const navigate = useNavigate()
   const pathname = location.pathname
   const { currentUser, userData, logout } = useAuth()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const navRef = useRef(null)
 
@@ -48,6 +69,7 @@ export default function Navbar() {
     function handleMouseDown(event) {
       if (navRef.current && !navRef.current.contains(event.target)) {
         setMenuOpen(false)
+        setAccountMenuOpen(false)
         setUserMenuOpen(false)
       }
     }
@@ -63,6 +85,17 @@ export default function Navbar() {
     navigate('/')
     setUserMenuOpen(false)
     setMenuOpen(false)
+    setAccountMenuOpen(false)
+  }
+
+  function openHamburger() {
+    setAccountMenuOpen(false)
+    setMenuOpen((open) => !open)
+  }
+
+  function openAccountMenu() {
+    setMenuOpen(false)
+    setAccountMenuOpen((open) => !open)
   }
 
   return (
@@ -140,31 +173,46 @@ export default function Navbar() {
           )}
         </div>
 
-        <button
-          type="button"
-          aria-expanded={menuOpen}
-          aria-label="Navigācijas izvēlne"
-          onClick={() => setMenuOpen((open) => !open)}
-          className="flex h-6 w-6 shrink-0 flex-col items-center justify-center rounded-md text-white transition-all duration-200 md:hidden"
-        >
-          <span className="flex h-6 w-6 flex-col justify-center gap-1.5 transition-all duration-200">
-            <span
-              className={`block h-0.5 w-6 rounded-full bg-white transition-all duration-200 ${
-                menuOpen ? 'translate-y-[7px] rotate-45' : ''
-              }`}
-            />
-            <span
-              className={`block h-0.5 w-6 rounded-full bg-white transition-all duration-200 ${
-                menuOpen ? 'opacity-0' : 'opacity-100'
-              }`}
-            />
-            <span
-              className={`block h-0.5 w-6 rounded-full bg-white transition-all duration-200 ${
-                menuOpen ? '-translate-y-[7px] -rotate-45' : ''
-              }`}
-            />
-          </span>
-        </button>
+        <div className="flex items-center gap-2 md:hidden">
+          <button
+            type="button"
+            aria-expanded={menuOpen}
+            aria-label="Navigācijas izvēlne"
+            onClick={openHamburger}
+            className="flex h-6 w-6 shrink-0 flex-col items-center justify-center rounded-md text-white transition-all duration-200"
+          >
+            <span className="flex h-6 w-6 flex-col justify-center gap-1.5 transition-all duration-200">
+              <span
+                className={`block h-0.5 w-6 rounded-full bg-white transition-all duration-200 ${
+                  menuOpen ? 'translate-y-[7px] rotate-45' : ''
+                }`}
+              />
+              <span
+                className={`block h-0.5 w-6 rounded-full bg-white transition-all duration-200 ${
+                  menuOpen ? 'opacity-0' : 'opacity-100'
+                }`}
+              />
+              <span
+                className={`block h-0.5 w-6 rounded-full bg-white transition-all duration-200 ${
+                  menuOpen ? '-translate-y-[7px] -rotate-45' : ''
+                }`}
+              />
+            </span>
+          </button>
+
+          <button
+            type="button"
+            aria-expanded={accountMenuOpen}
+            aria-label="Konta izvēlne"
+            onClick={openAccountMenu}
+            className={[
+              'flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white transition-colors',
+              currentUser ? 'bg-white/10 hover:bg-white/15' : 'hover:bg-white/10',
+            ].join(' ')}
+          >
+            <MobileAccountIcon />
+          </button>
+        </div>
       </div>
 
       <div
@@ -188,49 +236,52 @@ export default function Navbar() {
               </Link>
             )
           })}
-
-          <div className="border-t border-white/10">
-            {!currentUser ? (
-              <>
-                <Link
-                  to="/ieiet"
-                  onClick={() => setMenuOpen(false)}
-                  className="block w-full border-b border-white/10 px-6 py-4 text-base text-white transition-colors hover:bg-white/10"
-                >
-                  Ieiet
-                </Link>
-                <Link
-                  to="/registreties"
-                  onClick={() => setMenuOpen(false)}
-                  className="block w-full px-6 py-4 text-base text-white transition-colors hover:bg-white/10"
-                >
-                  Reģistrēties
-                </Link>
-              </>
-            ) : (
-              <>
-                <p className="px-6 py-3 text-sm text-muted">Sveiks, {username}!</p>
-                <Link
-                  to="/profils"
-                  onClick={() => setMenuOpen(false)}
-                  className="block w-full border-t border-white/10 px-6 py-4 text-base text-white transition-colors hover:bg-white/10"
-                >
-                  Mans profils
-                </Link>
-                <button
-                  type="button"
-                  onClick={() => {
-                    handleLogout()
-                  }}
-                  className="w-full border-t border-white/10 px-6 py-4 text-left text-base text-white transition-colors hover:bg-white/10"
-                >
-                  Iziet
-                </button>
-              </>
-            )}
-          </div>
         </div>
       </div>
+
+      {accountMenuOpen ? (
+        <div className="border-t border-white/10 bg-navy md:hidden">
+          {!currentUser ? (
+            <div className="w-full">
+              <Link
+                to="/ieiet"
+                className="block w-full border-b border-white/10 px-6 py-4 text-left text-white transition-colors hover:bg-white/10"
+                onClick={() => setAccountMenuOpen(false)}
+              >
+                Ieiet
+              </Link>
+              <Link
+                to="/registreties"
+                className="block w-full px-6 py-4 text-left text-teal transition-colors hover:bg-white/10"
+                onClick={() => setAccountMenuOpen(false)}
+              >
+                Reģistrēties
+              </Link>
+            </div>
+          ) : (
+            <div className="w-full">
+              <p className="border-b border-white/10 px-6 py-3 text-sm text-white/70">Sveiks, {username}!</p>
+              <Link
+                to="/profils"
+                className="block w-full border-b border-white/10 px-6 py-4 text-left text-white transition-colors hover:bg-white/10"
+                onClick={() => setAccountMenuOpen(false)}
+              >
+                Mans profils
+              </Link>
+              <button
+                type="button"
+                className="w-full px-6 py-4 text-left text-coral transition-colors hover:bg-white/10"
+                onClick={() => {
+                  setAccountMenuOpen(false)
+                  handleLogout()
+                }}
+              >
+                Iziet
+              </button>
+            </div>
+          )}
+        </div>
+      ) : null}
     </nav>
   )
 }
