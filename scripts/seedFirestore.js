@@ -5,9 +5,21 @@ import dirichletSolvedExamplesFromPdf from './dirichletPdfSolvedExamples.js'
 import virknesSolvedExamplesFromPdf from './virknesPdfSolvedExamples.js'
 import skaitlapierakstsSolvedExamplesFromPdf from './skaitlapierakstsPdfSolvedExamples.js'
 import skaitlapierakstsTopicDoc from './skaitlapierakstsTopicSeed.js'
+import induktiviSpriedumiTopicSeed from './induktiviSpriedumiTopicSeed.js'
+import matematiskasIndukcijasMetodeTopicSeed from './matematiskasIndukcijasMetodeTopicSeed.js'
+import piemersPretpiemersTopicSeed from './piemersPretpiemersTopicSeed.js'
+import polinomiTopicSeed from './polinomiTopicSeed.js'
+import invariantuMetodeTopicSeed from './invariantuMetodeTopicSeed.js'
 import { quizQuestionsByTopic } from './quizQuestionsSeedData.js'
 
-const topicsToSeed = [{ id: 'skaitlapieraksts', data: skaitlapierakstsTopicDoc }]
+const topicsToSeed = [
+  { id: 'skaitlapieraksts', data: skaitlapierakstsTopicDoc },
+  { id: 'induktivi-spriedumi', data: induktiviSpriedumiTopicSeed },
+  { id: 'matematiskas-indukcijas-metode', data: matematiskasIndukcijasMetodeTopicSeed },
+  { id: 'piemers-pretpiemers', data: piemersPretpiemersTopicSeed },
+  { id: 'polinomi', data: polinomiTopicSeed },
+  { id: 'invariantu-metode', data: invariantuMetodeTopicSeed },
+]
 
 async function seedTopics(db) {
   for (const { id, data } of topicsToSeed) {
@@ -36,7 +48,18 @@ async function updateSolvedExamples(db) {
 }
 
 async function seedQuizQuestions(db) {
-  const topicOrder = ['dalamiba', 'pirmrezinataji', 'dirichlet', 'virknes', 'skaitlapieraksts']
+  const topicOrder = [
+    'dalamiba',
+    'pirmrezinataji',
+    'dirichlet',
+    'virknes',
+    'skaitlapieraksts',
+    'induktivi-spriedumi',
+    'matematiskas-indukcijas-metode',
+    'piemers-pretpiemers',
+    'polinomi',
+    'invariantu-metode',
+  ]
   for (const topicId of topicOrder) {
     const questions = quizQuestionsByTopic[topicId]
     for (const question of questions) {
