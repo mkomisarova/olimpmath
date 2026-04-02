@@ -1,7 +1,9 @@
-import { Link, Route, Routes } from 'react-router-dom'
+import { Link, Outlet, Route, Routes } from 'react-router-dom'
 import PageLayout from './components/layout/PageLayout'
 import ScrollToTop from './components/layout/ScrollToTop'
 import HomePage from './pages/HomePage'
+import LoginPage from './pages/LoginPage'
+import RegisterPage from './pages/RegisterPage'
 import TheoryListPage from './pages/TheoryListPage'
 import TopicPage from './pages/TopicPage'
 
@@ -20,18 +22,28 @@ function NotFoundPage() {
   )
 }
 
-function App() {
+function MainLayout() {
   return (
     <PageLayout>
-      <ScrollToTop />
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/teorija" element={<TheoryListPage />} />
-        <Route path="/teorija/:slug" element={<TopicPage />} />
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
+      <Outlet />
     </PageLayout>
   )
 }
 
-export default App
+export default function App() {
+  return (
+    <>
+      <ScrollToTop />
+      <Routes>
+        <Route path="/ieiet" element={<LoginPage />} />
+        <Route path="/registreties" element={<RegisterPage />} />
+        <Route element={<MainLayout />}>
+          <Route index element={<HomePage />} />
+          <Route path="teorija" element={<TheoryListPage />} />
+          <Route path="teorija/:slug" element={<TopicPage />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Route>
+      </Routes>
+    </>
+  )
+}
