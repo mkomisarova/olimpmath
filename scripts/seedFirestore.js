@@ -15,6 +15,11 @@ import { additionalNewTopicQuizQuestionsByTopic } from './additionalNewTopicQuiz
 import { newInvariantiExamples, newVirknesExamples } from './appendExamplesSeedData.js'
 import nevienadibuPieradisanaTopicSeed from './nevienadibuPieradisanaTopicSeed.js'
 import { kongruencesQuiz, kongruencesTopicData } from './kongruencesSeedData.js'
+import {
+  vienadojumiVeselosSkaitlosQuiz,
+  vienadojumiVeselosSkaitlosTopicData,
+  vienadojumiVeselosSkaitlosTopicId,
+} from './vienadojumiVeselosSkaitlosSeedData.js'
 
 const newTopicIdsForExtraQuiz = [
   'induktivi-spriedumi',
@@ -121,6 +126,20 @@ async function seedKongruences(db) {
   console.log('Quiz questions seeded for: kongruences')
 }
 
+async function seedVienādojumiVeselosSkaitļos(db) {
+  await db.collection('topics').doc(vienadojumiVeselosSkaitlosTopicId).set(vienadojumiVeselosSkaitlosTopicData, { merge: false })
+  console.log(`Topic document set: ${vienadojumiVeselosSkaitlosTopicId}`)
+  for (const q of vienadojumiVeselosSkaitlosQuiz) {
+    await db
+      .collection('topics')
+      .doc(vienadojumiVeselosSkaitlosTopicId)
+      .collection('quizQuestions')
+      .doc(q.id)
+      .set(q)
+  }
+  console.log(`Quiz questions seeded for: ${vienadojumiVeselosSkaitlosTopicId}`)
+}
+
 async function seedNewTopicQuizzes(db) {
   for (const topicId of newTopicIdsForExtraQuiz) {
     const questions = additionalNewTopicQuizQuestionsByTopic[topicId]
@@ -155,6 +174,7 @@ async function seed() {
     await seedNewTopicQuizzes(db)
     await seedNewExamplesAndTopic(db)
     await seedKongruences(db)
+    await seedVienādojumiVeselosSkaitļos(db)
 
     console.log('Solved examples updated successfully')
     process.exit(0)

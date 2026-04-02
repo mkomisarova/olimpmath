@@ -4,6 +4,7 @@ import MathContent from '../ui/MathContent'
 const topicGrades = {
   dalamiba: [5, 6, 7, 8],
   kongruences: [9, 10, 11, 12],
+  'vienādojumi-veselos-skaitļos': [5, 6, 7, 8, 9, 10, 11, 12],
   pirmrezinataji: [5, 6, 7, 8, 9, 10, 11, 12],
   dirichlet: [7, 8, 9, 10, 11, 12],
   virknes: [9, 10, 11, 12],
@@ -87,6 +88,19 @@ const exampleGradeOverrides = {
     ex20: [9, 10, 11, 12],
     ex21: [9, 10, 11, 12],
     ex22: [9, 10, 11, 12],
+  },
+  'vienādojumi-veselos-skaitļos': {
+    ex1: [5, 6, 7, 8],
+    ex2: [5, 6, 7, 8],
+    ex3: [5, 6, 7, 8],
+    ex4: [5, 6, 7, 8],
+    ex5: [5, 6, 7, 8],
+    ex6: [9, 10, 11, 12],
+    ex7: [9, 10, 11, 12],
+    ex8: [9, 10, 11, 12],
+    ex9: [9, 10, 11, 12],
+    ex10: [9, 10, 11, 12],
+    ex11: [9, 10, 11, 12],
   },
 }
 
