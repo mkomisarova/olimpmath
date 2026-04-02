@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 
 const navLinks = [
   { to: '/teorija', label: 'Teorija' },
@@ -7,7 +7,13 @@ const navLinks = [
   { to: '/par-mums', label: 'Par mums' },
 ]
 
+function linkIsActive(pathname, to) {
+  return pathname === to || pathname.startsWith(`${to}/`)
+}
+
 export default function Navbar() {
+  const location = useLocation()
+  const pathname = location.pathname
   const [menuOpen, setMenuOpen] = useState(false)
   const navRef = useRef(null)
 
@@ -32,11 +38,22 @@ export default function Navbar() {
         </Link>
 
         <div className="hidden items-center gap-6 md:flex">
-          {navLinks.map(({ to, label }) => (
-            <Link key={to} to={to} className="text-white transition-opacity hover:opacity-80">
-              {label}
-            </Link>
-          ))}
+          {navLinks.map(({ to, label }) => {
+            const active = linkIsActive(pathname, to)
+            return (
+              <Link
+                key={to}
+                to={to}
+                className={
+                  active
+                    ? 'border-b-2 border-white pb-0.5 text-white transition-colors'
+                    : 'text-white/70 transition-colors hover:text-white'
+                }
+              >
+                {label}
+              </Link>
+            )
+          })}
         </div>
 
         <button
@@ -72,16 +89,21 @@ export default function Navbar() {
         }`}
       >
         <div className="flex w-full flex-col border-t border-white/10">
-          {navLinks.map(({ to, label }) => (
-            <Link
-              key={to}
-              to={to}
-              onClick={() => setMenuOpen(false)}
-              className="w-full border-b border-white/10 px-6 py-4 text-base text-white transition-colors hover:bg-white/10"
-            >
-              {label}
-            </Link>
-          ))}
+          {navLinks.map(({ to, label }) => {
+            const active = linkIsActive(pathname, to)
+            return (
+              <Link
+                key={to}
+                to={to}
+                onClick={() => setMenuOpen(false)}
+                className={`w-full border-b border-white/10 px-6 py-4 text-base text-white transition-colors hover:bg-white/10 ${
+                  active ? 'bg-white/10' : ''
+                }`}
+              >
+                {label}
+              </Link>
+            )
+          })}
         </div>
       </div>
     </nav>

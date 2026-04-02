@@ -8,13 +8,13 @@ const SUBJECT_LABELS = {
   citi: 'Citi',
 }
 
-export default function TopicCard({ id, displayName, subject, slug, order }) {
+export default function TopicCard({ displayName, subject, slug, order }) {
   const subjectLabel = SUBJECT_LABELS[subject] || 'Citi'
 
   return (
-    <article
-      key={id}
-      className="flex h-full flex-col rounded-xl bg-sand p-5 shadow-sm transition-all duration-200 hover:scale-105 hover:shadow-md"
+    <Link
+      to={`/teorija/${slug}`}
+      className="flex h-full cursor-pointer flex-col rounded-xl bg-sand p-5 shadow-sm transition-all duration-200 hover:scale-105 hover:shadow-md"
       data-order={order}
     >
       <div className="mb-4 flex justify-end">
@@ -24,10 +24,6 @@ export default function TopicCard({ id, displayName, subject, slug, order }) {
       </div>
 
       <h3 className="mb-6 text-xl font-bold text-navy">{displayName}</h3>
-
-      <Link to={`/teorija/${slug}`} className="mt-auto font-semibold text-teal hover:underline">
-        Lasīt vairāk →
-      </Link>
-    </article>
+    </Link>
   )
 }

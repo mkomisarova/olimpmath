@@ -44,6 +44,27 @@ export default function TheoryListPage() {
     )
   }
 
+  if (!topics || topics.length === 0) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-cream px-4 text-center">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="mb-4 h-10 w-10 text-muted"
+          aria-hidden
+        >
+          <path d="M8 3h8v3l-4 4 4 4v3H8v-3l4-4-4-4V3z" />
+        </svg>
+        <p className="text-muted">Saturs tiek pievienots...</p>
+      </div>
+    )
+  }
+
   return (
     <div className="bg-cream">
       <section className="bg-sand py-12">
