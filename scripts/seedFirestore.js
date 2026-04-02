@@ -11,6 +11,15 @@ import piemersPretpiemersTopicSeed from './piemersPretpiemersTopicSeed.js'
 import polinomiTopicSeed from './polinomiTopicSeed.js'
 import invariantuMetodeTopicSeed from './invariantuMetodeTopicSeed.js'
 import { quizQuestionsByTopic } from './quizQuestionsSeedData.js'
+import { additionalNewTopicQuizQuestionsByTopic } from './additionalNewTopicQuizSeed.js'
+
+const newTopicIdsForExtraQuiz = [
+  'induktivi-spriedumi',
+  'matematiskas-indukcijas-metode',
+  'piemers-pretpiemers',
+  'polinomi',
+  'invariantu-metode',
+]
 
 const topicsToSeed = [
   { id: 'skaitlapieraksts', data: skaitlapierakstsTopicDoc },
@@ -78,6 +87,26 @@ async function updatePirmrezinatajiQuizQ1(db) {
   console.log('Updated pirmrezinataji quizQuestions q1')
 }
 
+/** Adds q7–q16 (or any listed ids) only for ids not already present — does not overwrite. */
+async function seedNewTopicQuizzes(db) {
+  for (const topicId of newTopicIdsForExtraQuiz) {
+    const questions = additionalNewTopicQuizQuestionsByTopic[topicId]
+    if (!questions?.length) {
+      console.warn(`seedNewTopicQuizzes: no data for ${topicId}`)
+      continue
+    }
+    const existingSnap = await db.collection('topics').doc(topicId).collection('quizQuestions').get()
+    const existingIds = new Set(existingSnap.docs.map((d) => d.id))
+    for (const question of questions) {
+      if (existingIds.has(question.id)) {
+        continue
+      }
+      await db.collection('topics').doc(topicId).collection('quizQuestions').doc(question.id).set(question)
+    }
+    console.log(`Quiz questions seeded for: ${topicId}`)
+  }
+}
+
 async function seed() {
   try {
     admin.initializeApp({
@@ -90,6 +119,7 @@ async function seed() {
     await updateSolvedExamples(db)
     await seedQuizQuestions(db)
     await updatePirmrezinatajiQuizQ1(db)
+    await seedNewTopicQuizzes(db)
 
     console.log('Solved examples updated successfully')
     process.exit(0)
