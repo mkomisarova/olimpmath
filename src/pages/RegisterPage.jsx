@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import PasswordInputWithToggle from '../components/ui/PasswordInputWithToggle'
 import { getRegisterErrorMessage } from '../utils/firebaseAuthMessages'
 
 const inputClass =
@@ -13,6 +14,8 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [usernameError, setUsernameError] = useState('')
   const [passwordError, setPasswordError] = useState('')
   const [confirmError, setConfirmError] = useState('')
@@ -100,28 +103,28 @@ export default function RegisterPage() {
             <label className="mb-1 block text-sm font-medium text-navy" htmlFor="reg-password">
               Parole
             </label>
-            <input
+            <PasswordInputWithToggle
               id="reg-password"
-              type="password"
               autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required
-              className={`${inputClass} mb-1`}
+              showPassword={showPassword}
+              onToggle={() => setShowPassword((s) => !s)}
+              className="mb-1"
             />
             {passwordError ? <p className="mb-3 text-sm text-coral">{passwordError}</p> : null}
 
             <label className="mb-1 block text-sm font-medium text-navy" htmlFor="reg-confirm">
               Apstiprini paroli
             </label>
-            <input
+            <PasswordInputWithToggle
               id="reg-confirm"
-              type="password"
               autoComplete="new-password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-              className={`${inputClass} mb-1`}
+              showPassword={showConfirmPassword}
+              onToggle={() => setShowConfirmPassword((s) => !s)}
+              className="mb-1"
             />
             {confirmError ? <p className="mb-3 text-sm text-coral">{confirmError}</p> : null}
 

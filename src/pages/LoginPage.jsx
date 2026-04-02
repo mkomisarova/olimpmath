@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import PasswordInputWithToggle from '../components/ui/PasswordInputWithToggle'
 import { getLoginErrorMessage } from '../utils/firebaseAuthMessages'
 
 const inputClass =
@@ -11,6 +12,7 @@ export default function LoginPage() {
   const { login } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -57,14 +59,14 @@ export default function LoginPage() {
             <label className="mb-1 block text-sm font-medium text-navy" htmlFor="login-password">
               Parole
             </label>
-            <input
+            <PasswordInputWithToggle
               id="login-password"
-              type="password"
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required
-              className={inputClass}
+              showPassword={showPassword}
+              onToggle={() => setShowPassword((s) => !s)}
+              className="mb-4"
             />
 
             <button
