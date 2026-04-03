@@ -16,6 +16,7 @@ const topicGrades = {
   'nevienadibu-pieradisana': [9, 10, 11, 12],
   'videjais-aritmetiskais-geometriskais': [9, 10, 11, 12],
   'kvadrata-atdalisana': [9, 10, 11, 12],
+  'am-gm': [9, 10, 11, 12],
   'invariantu-metode': [5, 6, 7, 8, 9, 10, 11, 12],
 }
 

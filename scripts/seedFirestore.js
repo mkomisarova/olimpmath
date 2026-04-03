@@ -32,6 +32,7 @@ import {
   videjaisAritmetiskaisGeometriskaisTopicData,
 } from './videjaisAritmetiskaisGeometriskaisSeedData.js'
 import { virknesNewExamples, virknesNewSections } from './virknesPapildinajumiSeedData.js'
+import { amGmQuiz, amGmTopicData } from './amGmTopicSeedData.js'
 
 const AMGM_SECTION_TITLE =
   'Nevienādība starp vidējo aritmētisko un vidējo ģeometrisko (AM-GM)'
@@ -302,6 +303,105 @@ async function seedSversanasUzdevumi(db) {
   console.log('Quiz questions seeded for: sversanas-uzdevumi')
 }
 
+function minGradeForSkaitlaExample(ex) {
+  const g = ex?.grades
+  if (Array.isArray(g) && g.length > 0) return Math.min(...g)
+  return 999
+}
+
+function problemKeySkaitla(ex) {
+  return (ex?.problem ?? '').trim()
+}
+
+async function fixSkaitlaPierakstsDuplicates(db) {
+  const ref = db.collection('topics').doc('skaitlapieraksts')
+  const snap = await ref.get()
+  if (!snap.exists) {
+    return
+  }
+  const raw = snap.data().solvedExamples || []
+  if (raw.length === 0) {
+    return
+  }
+
+  const groups = new Map()
+  raw.forEach((ex, idx) => {
+    const k = problemKeySkaitla(ex)
+    if (!groups.has(k)) groups.set(k, [])
+    groups.get(k).push({ ex, idx })
+  })
+
+  const winners = []
+  for (const arr of groups.values()) {
+    arr.sort((A, B) => {
+      const ma = minGradeForSkaitlaExample(A.ex)
+      const mb = minGradeForSkaitlaExample(B.ex)
+      if (ma !== mb) return ma - mb
+      return A.idx - B.idx
+    })
+    const firstInDoc = Math.min(...arr.map((a) => a.idx))
+    winners.push({ ex: arr[0].ex, firstInDoc })
+  }
+  winners.sort((a, b) => a.firstInDoc - b.firstInDoc)
+
+  const deduplicatedArray = winners.map((w, i) => ({
+    ...w.ex,
+    id: `ex${i + 1}`,
+  }))
+
+  const removed = raw.length - deduplicatedArray.length
+  await ref.update({ solvedExamples: deduplicatedArray })
+  console.log(
+    `fixSkaitlaPierakstsDuplicates: removed ${removed} duplicate problem(s), ${deduplicatedArray.length} examples kept`,
+  )
+}
+
+function sectionTitleMatchesAmgmRemoval(title) {
+  if (!title || typeof title !== 'string') return false
+  const t = title.toLowerCase()
+  return (
+    t.includes('am-gm') ||
+    t.includes('vidējo nevienādība') ||
+    t.includes('aritmētiskā')
+  )
+}
+
+function exampleMatchesAmgmRemoval(ex) {
+  if (!ex) return false
+  const id = String(ex.id ?? '')
+  if (id.toLowerCase().startsWith('ex_amgm')) return true
+  const p = String(ex.problem ?? '').toLowerCase()
+  if (p.includes('am-gm')) return true
+  return false
+}
+
+async function seedAMGMTopic(db) {
+  const nevRef = db.collection('topics').doc('nevienadibu-pieradisana')
+  const nevSnap = await nevRef.get()
+  if (nevSnap.exists) {
+    const d = nevSnap.data()
+    const sections = d.theory?.sections || []
+    const filteredSections = sections.filter((s) => !sectionTitleMatchesAmgmRemoval(s.title))
+    const examples = d.solvedExamples || []
+    const filteredExamples = examples.filter((e) => !exampleMatchesAmgmRemoval(e))
+    if (filteredSections.length !== sections.length || filteredExamples.length !== examples.length) {
+      await nevRef.update({
+        'theory.sections': filteredSections,
+        solvedExamples: filteredExamples,
+      })
+    }
+    console.log('Removed AM-GM content from nevienadibu-pieradisana')
+  }
+
+  const amRef = db.collection('topics').doc('am-gm')
+  await amRef.set(amGmTopicData, { merge: false })
+  console.log('Created am-gm topic')
+  for (const q of amGmQuiz) {
+    await amRef.collection('quizQuestions').doc(q.id).set(q)
+  }
+  console.log('Quiz seeded for am-gm')
+}
+
 async function seedNewTopicQuizzes(db) {
   for (const topicId of newTopicIdsForExtraQuiz) {
     const questions = additionalNewTopicQuizQuestionsByTopic[topicId]
@@ -343,6 +443,8 @@ async function seed() {
     await stripAmgmFromNevienadibuPieradisana(db)
     await seedVidejaisAritmetiskaisGeometriskais(db)
     await seedKvadrataAtdalisana(db)
+    await fixSkaitlaPierakstsDuplicates(db)
+    await seedAMGMTopic(db)
 
     console.log('Solved examples updated successfully')
     process.exit(0)

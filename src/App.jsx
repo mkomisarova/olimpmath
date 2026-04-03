@@ -6,6 +6,7 @@ import LoginPage from './pages/LoginPage'
 import ProfilePage from './pages/ProfilePage'
 import RegisterPage from './pages/RegisterPage'
 import TheoryListPage from './pages/TheoryListPage'
+import ParMusPage from './pages/ParMusPage'
 import TopicPage from './pages/TopicPage'
 
 function NotFoundPage() {
@@ -42,6 +43,7 @@ export default function App() {
           <Route index element={<HomePage />} />
           <Route path="teorija" element={<TheoryListPage />} />
           <Route path="teorija/:slug" element={<TopicPage />} />
+          <Route path="par-mums" element={<ParMusPage />} />
           <Route path="profils" element={<ProfilePage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>

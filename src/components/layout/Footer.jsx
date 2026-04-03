@@ -16,6 +16,16 @@ export default function Footer() {
           </Link>
         ))}
       </nav>
+      <p className="mb-4 text-xs text-muted transition hover:text-white">
+        <a
+          href="https://nms.lu.lv"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="transition hover:text-white"
+        >
+          Materiāli: NMS Latvia
+        </a>
+      </p>
       <p className="mb-2 text-sm">Veidots matemātikas olimpiādes entuziastiem Latvijā</p>
       <p className="text-sm">© 2025. Visas tiesības aizsargātas.</p>
     </footer>
