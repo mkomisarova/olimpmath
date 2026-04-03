@@ -21,6 +21,7 @@ import {
   vienadojumiVeselosSkaitlosTopicData,
   vienadojumiVeselosSkaitlosTopicId,
 } from './vienadojumiVeselosSkaitlosSeedData.js'
+import { nevienadibuNewExamples, nevienadibuNewSections } from './nevienadibuPieradisanaPapildinajumiSeedData.js'
 
 const newTopicIdsForExtraQuiz = [
   'induktivi-spriedumi',
@@ -151,6 +152,24 @@ async function seedSkaitlaPierakstsPapildinajumi(db) {
   console.log('Appended solved examples to skaitlapieraksts')
 }
 
+async function seedNevienadibuPieradisanaPapildinajumi(db) {
+  const ref = db.collection('topics').doc('nevienadibu-pieradisana')
+  const snap = await ref.get()
+  const data = snap.data() || {}
+  const existingSections = data.theory?.sections || []
+  const existingExamples = data.solvedExamples || []
+
+  await ref.update({
+    'theory.sections': [...existingSections, ...nevienadibuNewSections],
+  })
+
+  await ref.update({
+    solvedExamples: [...existingExamples, ...nevienadibuNewExamples],
+  })
+
+  console.log('Appended AM-GM theory section and examples to nevienadibu-pieradisana')
+}
+
 async function seedNewTopicQuizzes(db) {
   for (const topicId of newTopicIdsForExtraQuiz) {
     const questions = additionalNewTopicQuizQuestionsByTopic[topicId]
@@ -187,6 +206,7 @@ async function seed() {
     await seedKongruences(db)
     await seedVienādojumiVeselosSkaitļos(db)
     await seedSkaitlaPierakstsPapildinajumi(db)
+    await seedNevienadibuPieradisanaPapildinajumi(db)
 
     console.log('Solved examples updated successfully')
     process.exit(0)
