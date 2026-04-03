@@ -25,6 +25,9 @@ import { sversanasQuiz, sversanasTopicData } from './sversanasUzdevumiSeedData.j
 import { nevienadibuNewExamples, nevienadibuNewSections } from './nevienadibuPieradisanaPapildinajumiSeedData.js'
 import { virknesNewExamples, virknesNewSections } from './virknesPapildinajumiSeedData.js'
 
+const NEVIENADIBU_AMGM_SECTION_TITLE =
+  'Nevienādība starp vidējo aritmētisko un vidējo ģeometrisko (AM-GM)'
+
 const newTopicIdsForExtraQuiz = [
   'induktivi-spriedumi',
   'matematiskas-indukcijas-metode',
@@ -104,18 +107,28 @@ async function seedNewExamplesAndTopic(db) {
   const virknesRef = db.collection('topics').doc('virknes')
   const virknesDoc = await virknesRef.get()
   const existingExamples = virknesDoc.data()?.solvedExamples || []
-  await virknesRef.update({
-    solvedExamples: [...existingExamples, ...newVirknesExamples],
-  })
-  console.log('Appended examples ex10–ex12 to virknes')
+  const virknesAlreadySeeded = existingExamples.some((e) => e.id === 'ex10')
+  if (virknesAlreadySeeded) {
+    console.log('[seedNewExamplesAndTopic] Already seeded, skipping.')
+  } else {
+    await virknesRef.update({
+      solvedExamples: [...existingExamples, ...newVirknesExamples],
+    })
+    console.log('Appended examples ex10–ex12 to virknes')
+  }
 
   const invariantiRef = db.collection('topics').doc('invariantu-metode')
   const invariantiDoc = await invariantiRef.get()
   const existingInvarianti = invariantiDoc.data()?.solvedExamples || []
-  await invariantiRef.update({
-    solvedExamples: [...existingInvarianti, ...newInvariantiExamples],
-  })
-  console.log('Appended examples ex18–ex22 to invariantu-metode')
+  const invariantiAlreadySeeded = existingInvarianti.some((e) => e.id === 'ex18')
+  if (invariantiAlreadySeeded) {
+    console.log('[seedNewExamplesAndTopic] Already seeded, skipping.')
+  } else {
+    await invariantiRef.update({
+      solvedExamples: [...existingInvarianti, ...newInvariantiExamples],
+    })
+    console.log('Appended examples ex18–ex22 to invariantu-metode')
+  }
 
   await db.collection('topics').doc('nevienadibu-pieradisana').set(nevienadibuPieradisanaTopicSeed, { merge: false })
   console.log('Topic document set: nevienadibu-pieradisana')
@@ -148,6 +161,11 @@ async function seedSkaitlaPierakstsPapildinajumi(db) {
   const ref = db.collection('topics').doc('skaitlapieraksts')
   const snap = await ref.get()
   const existing = snap.data()?.solvedExamples || []
+  const alreadySeeded = existing.some((e) => e.id === 'ex_sp1')
+  if (alreadySeeded) {
+    console.log('[seedSkaitlaPierakstsPapildinajumi] Already seeded, skipping.')
+    return
+  }
   await ref.update({
     solvedExamples: [...existing, ...skaitlaPierakstsPapildinajumi],
   })
@@ -161,14 +179,31 @@ async function seedNevienadibuPieradisanaPapildinajumi(db) {
   const existingSections = data.theory?.sections || []
   const existingExamples = data.solvedExamples || []
 
-  await ref.update({
-    'theory.sections': [...existingSections, ...nevienadibuNewSections],
-  })
+  const sectionAlreadySeeded = existingSections.some((s) => s.title === NEVIENADIBU_AMGM_SECTION_TITLE)
+  const examplesAlreadySeeded = existingExamples.some((e) => e.id === 'ex_amgm1')
 
-  await ref.update({
-    solvedExamples: [...existingExamples, ...nevienadibuNewExamples],
-  })
+  if (sectionAlreadySeeded && examplesAlreadySeeded) {
+    console.log('[seedNevienadibuPieradisanaPapildinajumi] Already seeded, skipping.')
+    return
+  }
 
+  const updates = {}
+  if (!sectionAlreadySeeded) {
+    updates['theory.sections'] = [...existingSections, ...nevienadibuNewSections]
+  } else {
+    console.log('[seedNevienadibuPieradisanaPapildinajumi] Theory section already seeded, skipping.')
+  }
+  if (!examplesAlreadySeeded) {
+    updates.solvedExamples = [...existingExamples, ...nevienadibuNewExamples]
+  } else {
+    console.log('[seedNevienadibuPieradisanaPapildinajumi] Already seeded, skipping.')
+  }
+
+  if (Object.keys(updates).length === 0) {
+    return
+  }
+
+  await ref.update(updates)
   console.log('Appended AM-GM theory section and examples to nevienadibu-pieradisana')
 }
 
@@ -178,10 +213,32 @@ async function seedVirknesPapildinajumi(db) {
   const data = doc.data() || {}
   const existingSections = data.theory?.sections || []
   const existingExamples = data.solvedExamples || []
-  await ref.update({
-    'theory.sections': [...existingSections, ...virknesNewSections],
-    solvedExamples: [...existingExamples, ...virknesNewExamples],
-  })
+
+  const sectionAlreadySeeded = existingSections.some((s) => s.title === 'Rekurentas virknes')
+  const examplesAlreadySeeded = existingExamples.some((e) => e.id === 'ex_rek1')
+
+  if (sectionAlreadySeeded && examplesAlreadySeeded) {
+    console.log('[seedVirknesPapildinajumi] Already seeded, skipping.')
+    return
+  }
+
+  const updates = {}
+  if (!sectionAlreadySeeded) {
+    updates['theory.sections'] = [...existingSections, ...virknesNewSections]
+  } else {
+    console.log('[seedVirknesPapildinajumi] Theory section already seeded, skipping.')
+  }
+  if (!examplesAlreadySeeded) {
+    updates.solvedExamples = [...existingExamples, ...virknesNewExamples]
+  } else {
+    console.log('[seedVirknesPapildinajumi] Already seeded, skipping.')
+  }
+
+  if (Object.keys(updates).length === 0) {
+    return
+  }
+
+  await ref.update(updates)
   console.log('Appended rekurentas virknes theory section and solved examples to virknes')
 }
 
