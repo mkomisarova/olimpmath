@@ -52,23 +52,23 @@ async function seedTopics(db) {
   }
 }
 
+async function updateSolvedExamplesForTopic(db, topicId, solvedExamples) {
+  const ref = db.collection('topics').doc(topicId)
+  const snap = await ref.get()
+  const existing = snap.data()?.solvedExamples || []
+  if (existing.length === solvedExamples.length) {
+    console.log(`solvedExamples already up to date for ${topicId}, skipping`)
+    return
+  }
+  await ref.update({ solvedExamples })
+  console.log(`Updated solvedExamples for ${topicId}`)
+}
+
 async function updateSolvedExamples(db) {
-  await db.collection('topics').doc('pirmrezinataji').update({
-    solvedExamples: pirmSolvedExamplesFromPdf,
-  })
-  console.log('Updated solvedExamples for pirmrezinataji')
-  await db.collection('topics').doc('dirichlet').update({
-    solvedExamples: dirichletSolvedExamplesFromPdf,
-  })
-  console.log('Updated solvedExamples for dirichlet')
-  await db.collection('topics').doc('virknes').update({
-    solvedExamples: virknesSolvedExamplesFromPdf,
-  })
-  console.log('Updated solvedExamples for virknes')
-  await db.collection('topics').doc('skaitlapieraksts').update({
-    solvedExamples: skaitlapierakstsSolvedExamplesFromPdf,
-  })
-  console.log('Updated solvedExamples for skaitlapieraksts')
+  await updateSolvedExamplesForTopic(db, 'pirmrezinataji', pirmSolvedExamplesFromPdf)
+  await updateSolvedExamplesForTopic(db, 'dirichlet', dirichletSolvedExamplesFromPdf)
+  await updateSolvedExamplesForTopic(db, 'virknes', virknesSolvedExamplesFromPdf)
+  await updateSolvedExamplesForTopic(db, 'skaitlapieraksts', skaitlapierakstsSolvedExamplesFromPdf)
 }
 
 async function seedQuizQuestions(db) {
@@ -85,6 +85,10 @@ async function seedQuizQuestions(db) {
     'invariantu-metode',
   ]
   for (const topicId of topicOrder) {
+    if (!quizQuestionsByTopic[topicId]) {
+      console.warn('No quiz data found for topic:', topicId)
+      continue
+    }
     const questions = quizQuestionsByTopic[topicId]
     for (const question of questions) {
       await db.collection('topics').doc(topicId).collection('quizQuestions').doc(question.id).set(question)
@@ -130,7 +134,7 @@ async function seedNewExamplesAndTopic(db) {
     console.log('Appended examples ex18–ex22 to invariantu-metode')
   }
 
-  await db.collection('topics').doc('nevienadibu-pieradisana').set(nevienadibuPieradisanaTopicSeed, { merge: false })
+  await db.collection('topics').doc('nevienadibu-pieradisana').set(nevienadibuPieradisanaTopicSeed, { merge: true })
   console.log('Topic document set: nevienadibu-pieradisana')
 }
 
@@ -179,31 +183,17 @@ async function seedNevienadibuPieradisanaPapildinajumi(db) {
   const existingSections = data.theory?.sections || []
   const existingExamples = data.solvedExamples || []
 
-  const sectionAlreadySeeded = existingSections.some((s) => s.title === NEVIENADIBU_AMGM_SECTION_TITLE)
-  const examplesAlreadySeeded = existingExamples.some((e) => e.id === 'ex_amgm1')
-
-  if (sectionAlreadySeeded && examplesAlreadySeeded) {
-    console.log('[seedNevienadibuPieradisanaPapildinajumi] Already seeded, skipping.')
+  const hasAmgmSection = existingSections.some((s) => s.title === NEVIENADIBU_AMGM_SECTION_TITLE)
+  const hasAmgmExample = existingExamples.some((e) => e.id === 'ex_amgm1')
+  if (hasAmgmSection || hasAmgmExample) {
+    console.log('AM-GM already seeded, skipping')
     return
   }
 
-  const updates = {}
-  if (!sectionAlreadySeeded) {
-    updates['theory.sections'] = [...existingSections, ...nevienadibuNewSections]
-  } else {
-    console.log('[seedNevienadibuPieradisanaPapildinajumi] Theory section already seeded, skipping.')
-  }
-  if (!examplesAlreadySeeded) {
-    updates.solvedExamples = [...existingExamples, ...nevienadibuNewExamples]
-  } else {
-    console.log('[seedNevienadibuPieradisanaPapildinajumi] Already seeded, skipping.')
-  }
-
-  if (Object.keys(updates).length === 0) {
-    return
-  }
-
-  await ref.update(updates)
+  await ref.update({
+    'theory.sections': [...existingSections, ...nevienadibuNewSections],
+    solvedExamples: [...existingExamples, ...nevienadibuNewExamples],
+  })
   console.log('Appended AM-GM theory section and examples to nevienadibu-pieradisana')
 }
 
