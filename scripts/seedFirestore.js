@@ -21,6 +21,7 @@ import {
   vienadojumiVeselosSkaitlosTopicData,
   vienadojumiVeselosSkaitlosTopicId,
 } from './vienadojumiVeselosSkaitlosSeedData.js'
+import { sversanasQuiz, sversanasTopicData } from './sversanasUzdevumiSeedData.js'
 import { nevienadibuNewExamples, nevienadibuNewSections } from './nevienadibuPieradisanaPapildinajumiSeedData.js'
 
 const newTopicIdsForExtraQuiz = [
@@ -170,6 +171,20 @@ async function seedNevienadibuPieradisanaPapildinajumi(db) {
   console.log('Appended AM-GM theory section and examples to nevienadibu-pieradisana')
 }
 
+async function seedSversanasUzdevumi(db) {
+  await db.collection('topics').doc('sversanas-uzdevumi').set(sversanasTopicData, { merge: false })
+  console.log('Topic document set: sversanas-uzdevumi')
+  for (const q of sversanasQuiz) {
+    await db
+      .collection('topics')
+      .doc('sversanas-uzdevumi')
+      .collection('quizQuestions')
+      .doc(q.id)
+      .set(q)
+  }
+  console.log('Quiz questions seeded for: sversanas-uzdevumi')
+}
+
 async function seedNewTopicQuizzes(db) {
   for (const topicId of newTopicIdsForExtraQuiz) {
     const questions = additionalNewTopicQuizQuestionsByTopic[topicId]
@@ -207,6 +222,7 @@ async function seed() {
     await seedVienādojumiVeselosSkaitļos(db)
     await seedSkaitlaPierakstsPapildinajumi(db)
     await seedNevienadibuPieradisanaPapildinajumi(db)
+    await seedSversanasUzdevumi(db)
 
     console.log('Solved examples updated successfully')
     process.exit(0)
