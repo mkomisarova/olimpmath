@@ -23,6 +23,7 @@ import {
 } from './vienadojumiVeselosSkaitlosSeedData.js'
 import { sversanasQuiz, sversanasTopicData } from './sversanasUzdevumiSeedData.js'
 import { nevienadibuNewExamples, nevienadibuNewSections } from './nevienadibuPieradisanaPapildinajumiSeedData.js'
+import { virknesNewExamples, virknesNewSections } from './virknesPapildinajumiSeedData.js'
 
 const newTopicIdsForExtraQuiz = [
   'induktivi-spriedumi',
@@ -171,6 +172,19 @@ async function seedNevienadibuPieradisanaPapildinajumi(db) {
   console.log('Appended AM-GM theory section and examples to nevienadibu-pieradisana')
 }
 
+async function seedVirknesPapildinajumi(db) {
+  const ref = db.collection('topics').doc('virknes')
+  const doc = await ref.get()
+  const data = doc.data() || {}
+  const existingSections = data.theory?.sections || []
+  const existingExamples = data.solvedExamples || []
+  await ref.update({
+    'theory.sections': [...existingSections, ...virknesNewSections],
+    solvedExamples: [...existingExamples, ...virknesNewExamples],
+  })
+  console.log('Appended rekurentas virknes theory section and solved examples to virknes')
+}
+
 async function seedSversanasUzdevumi(db) {
   await db.collection('topics').doc('sversanas-uzdevumi').set(sversanasTopicData, { merge: false })
   console.log('Topic document set: sversanas-uzdevumi')
@@ -223,6 +237,7 @@ async function seed() {
     await seedSkaitlaPierakstsPapildinajumi(db)
     await seedNevienadibuPieradisanaPapildinajumi(db)
     await seedSversanasUzdevumi(db)
+    await seedVirknesPapildinajumi(db)
 
     console.log('Solved examples updated successfully')
     process.exit(0)
