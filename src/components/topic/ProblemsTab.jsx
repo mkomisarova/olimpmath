@@ -27,8 +27,18 @@ export default function ProblemsTab({ topicId }) {
       setLoading(true)
       try {
         const data = await getTopicProblems(topicId)
+        const sorted = [...data].sort((a, b) => {
+          const gradesA = Array.isArray(a.grades) && a.grades.length > 0 ? a.grades : []
+          const gradesB = Array.isArray(b.grades) && b.grades.length > 0 ? b.grades : []
+          const minA = gradesA.length ? Math.min(...gradesA) : 999
+          const minB = gradesB.length ? Math.min(...gradesB) : 999
+          if (minA !== minB) return minA - minB
+          const dA = Number(a.difficulty) || 0
+          const dB = Number(b.difficulty) || 0
+          return dA - dB
+        })
         if (isMounted) {
-          setProblems(data)
+          setProblems(sorted)
           setOpenSolutions({})
           setSolvedIds(new Set())
           guestToastShownRef.current = false

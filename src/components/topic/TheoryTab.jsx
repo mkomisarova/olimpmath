@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { useProgress } from '../../hooks/useProgress'
 import MathContent from '../ui/MathContent'
 
@@ -21,9 +22,29 @@ function CheckIcon() {
   )
 }
 
-export default function TheoryTab({ topic, topicId }) {
+export default function TheoryTab({ topic, topicId, onRead }) {
   const { isTopicRead } = useProgress()
   const sections = topic?.theory?.sections || []
+  const bottomRef = useRef(null)
+
+  useEffect(() => {
+    const el = bottomRef.current
+    if (!onRead || !el) return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.intersectionRatio > 0) {
+            onRead()
+            observer.disconnect()
+            break
+          }
+        }
+      },
+      { threshold: 0.1 },
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [onRead])
 
   return (
     <div className="space-y-8">
@@ -65,6 +86,7 @@ export default function TheoryTab({ topic, topicId }) {
           <MathContent content={section.content} />
         </section>
       ))}
+      <div ref={bottomRef} style={{ height: '1px' }} aria-hidden />
     </div>
   )
 }

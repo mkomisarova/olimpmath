@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import ExamplesTab from '../components/topic/ExamplesTab'
 import ProblemsTab from '../components/topic/ProblemsTab'
@@ -31,19 +31,20 @@ export default function TopicPage() {
   const { slug } = useParams()
   const { topic, loading, error } = useTopic(slug)
   const [activeTab, setActiveTab] = useState('teorija')
+  const [examplesAllRead, setExamplesAllRead] = useState(false)
   const { markTopicRead, isTopicRead, getQuizScore } = useProgress()
-  const theoryMarkedForVisitRef = useRef(false)
+  const hasMarkedTheoryReadRef = useRef(false)
 
   useEffect(() => {
-    theoryMarkedForVisitRef.current = false
+    hasMarkedTheoryReadRef.current = false
+    setExamplesAllRead(false)
   }, [topic?.id])
 
-  useEffect(() => {
-    if (activeTab !== 'teorija' || !topic?.id) return
-    if (theoryMarkedForVisitRef.current) return
-    theoryMarkedForVisitRef.current = true
+  const handleTheoryRead = useCallback(() => {
+    if (!topic?.id || hasMarkedTheoryReadRef.current) return
+    hasMarkedTheoryReadRef.current = true
     markTopicRead(topic.id)
-  }, [activeTab, topic?.id, markTopicRead])
+  }, [topic?.id, markTopicRead])
 
   if (loading) {
     return (
@@ -74,7 +75,7 @@ export default function TopicPage() {
   const tabIndicators = {
     teorija: isTopicRead(topic.id) ? 'done' : null,
     tests: testsIndicator,
-    piem: null,
+    piem: examplesAllRead ? 'done' : null,
     uzdevumi: null,
   }
 
@@ -114,8 +115,8 @@ export default function TopicPage() {
 
       <section className="p-8">
         <div className="mx-auto max-w-4xl">
-          {activeTab === 'teorija' && <TheoryTab topic={topic} topicId={topic.id} />}
-          {activeTab === 'piem' && <ExamplesTab topic={topic} />}
+          {activeTab === 'teorija' && <TheoryTab topic={topic} topicId={topic.id} onRead={handleTheoryRead} />}
+          {activeTab === 'piem' && <ExamplesTab topic={topic} onAllRead={setExamplesAllRead} />}
           {activeTab === 'tests' && <QuizTab topicId={topic.id} />}
           {activeTab === 'uzdevumi' && <ProblemsTab topicId={topic.id} />}
         </div>

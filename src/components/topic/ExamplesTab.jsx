@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import MathContent from '../ui/MathContent'
 
 const topicGrades = {
@@ -111,7 +111,7 @@ export function getTopicGrades(topicId) {
   return topicGrades[topicId] ?? []
 }
 
-function getGradesForExample(topicId, exampleId, example) {
+export function getGradesForExample(topicId, exampleId, example) {
   if (Array.isArray(example?.grades) && example.grades.length > 0) {
     return example.grades
   }
@@ -130,16 +130,51 @@ export function formatGradeRange(grades) {
   return first === last ? `${first}. kl.` : `${first}.${dash}${last}. kl.`
 }
 
-export default function ExamplesTab({ topic }) {
+export default function ExamplesTab({ topic, onAllRead }) {
   const [openSolutions, setOpenSolutions] = useState({})
-  const examples = topic?.solvedExamples || []
+  const [readExamples, setReadExamples] = useState(() => new Set())
+  const rawExamples = topic?.solvedExamples || []
   const topicId = topic?.id
 
+  const examples = useMemo(() => {
+    return [...rawExamples]
+      .map((ex, idx) => ({ ex, idx }))
+      .sort((A, B) => {
+        const ida = A.ex.id || `example-${A.idx}`
+        const idb = B.ex.id || `example-${B.idx}`
+        const ga = getGradesForExample(topicId, ida, A.ex)
+        const gb = getGradesForExample(topicId, idb, B.ex)
+        const minA = ga.length ? Math.min(...ga) : 999
+        const minB = gb.length ? Math.min(...gb) : 999
+        if (minA !== minB) return minA - minB
+        return A.idx - B.idx
+      })
+      .map(({ ex }) => ex)
+  }, [rawExamples, topicId])
+
+  useEffect(() => {
+    setReadExamples(new Set())
+    setOpenSolutions({})
+  }, [topicId])
+
+  useEffect(() => {
+    if (!onAllRead) return
+    const total = examples.length
+    if (total === 0) {
+      onAllRead(false)
+      return
+    }
+    onAllRead(readExamples.size === total)
+  }, [readExamples, examples.length, onAllRead])
+
   const toggleSolution = (exampleId) => {
-    setOpenSolutions((prev) => ({
-      ...prev,
-      [exampleId]: !prev[exampleId],
-    }))
+    setOpenSolutions((prev) => {
+      const nextOpen = !prev[exampleId]
+      if (nextOpen) {
+        setReadExamples((rs) => new Set(rs).add(exampleId))
+      }
+      return { ...prev, [exampleId]: nextOpen }
+    })
   }
 
   if (examples.length === 0) {
@@ -147,6 +182,10 @@ export default function ExamplesTab({ topic }) {
       <p className="py-8 text-center text-muted">Atrisinātie piemēri drīzumā būs pieejami</p>
     )
   }
+
+  const total = examples.length
+  const readCount = readExamples.size
+  const allRead = total > 0 && readCount === total
 
   return (
     <div className="space-y-6">
@@ -182,6 +221,23 @@ export default function ExamplesTab({ topic }) {
           </article>
         )
       })}
+
+      {total > 0 ? (
+        <div className="mt-8 space-y-2 border-t border-sand pt-6">
+          <p className="text-sm text-muted">
+            Izlasīts: {readCount} / {total} piemēri
+          </p>
+          <div className="h-2 w-full rounded-full bg-sand">
+            <div
+              className="h-2 rounded-full bg-sage transition-all duration-300"
+              style={{ width: `${(readCount / total) * 100}%` }}
+            />
+          </div>
+          {allRead ? (
+            <p className="text-sm font-medium text-sage">✓ Visi piemēri izlasīti!</p>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   )
 }
