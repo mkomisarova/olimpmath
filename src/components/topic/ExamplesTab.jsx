@@ -14,6 +14,8 @@ const topicGrades = {
   'piemers-pretpiemers': [5, 6, 7, 8, 9],
   polinomi: [10, 11, 12],
   'nevienadibu-pieradisana': [9, 10, 11, 12],
+  'videjais-aritmetiskais-geometriskais': [9, 10, 11, 12],
+  'kvadrata-atdalisana': [9, 10, 11, 12],
   'invariantu-metode': [5, 6, 7, 8, 9, 10, 11, 12],
 }
 

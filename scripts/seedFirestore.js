@@ -22,10 +22,18 @@ import {
   vienadojumiVeselosSkaitlosTopicId,
 } from './vienadojumiVeselosSkaitlosSeedData.js'
 import { sversanasQuiz, sversanasTopicData } from './sversanasUzdevumiSeedData.js'
-import { nevienadibuNewExamples, nevienadibuNewSections } from './nevienadibuPieradisanaPapildinajumiSeedData.js'
+import {
+  kvadrataAtdalisanaTopicData,
+  kvadrataMovedExampleIds,
+  pilnoKvadratuSectionTitle,
+} from './kvadrataAtdalisanaSeedData.js'
+import {
+  videjaisAritmetiskaisGeometriskaisQuiz,
+  videjaisAritmetiskaisGeometriskaisTopicData,
+} from './videjaisAritmetiskaisGeometriskaisSeedData.js'
 import { virknesNewExamples, virknesNewSections } from './virknesPapildinajumiSeedData.js'
 
-const NEVIENADIBU_AMGM_SECTION_TITLE =
+const AMGM_SECTION_TITLE =
   'Nevienādība starp vidējo aritmētisko un vidējo ģeometrisko (AM-GM)'
 
 const newTopicIdsForExtraQuiz = [
@@ -134,7 +142,17 @@ async function seedNewExamplesAndTopic(db) {
     console.log('Appended examples ex18–ex22 to invariantu-metode')
   }
 
-  await db.collection('topics').doc('nevienadibu-pieradisana').set(nevienadibuPieradisanaTopicSeed, { merge: true })
+  const n = nevienadibuPieradisanaTopicSeed
+  await db.collection('topics').doc('nevienadibu-pieradisana').set(
+    {
+      displayName: n.displayName,
+      slug: n.slug,
+      subject: n.subject,
+      order: n.order,
+      theory: n.theory,
+    },
+    { merge: true },
+  )
   console.log('Topic document set: nevienadibu-pieradisana')
 }
 
@@ -176,25 +194,63 @@ async function seedSkaitlaPierakstsPapildinajumi(db) {
   console.log('Appended solved examples to skaitlapieraksts')
 }
 
-async function seedNevienadibuPieradisanaPapildinajumi(db) {
+async function stripAmgmFromNevienadibuPieradisana(db) {
   const ref = db.collection('topics').doc('nevienadibu-pieradisana')
-  const snap = await ref.get()
-  const data = snap.data() || {}
-  const existingSections = data.theory?.sections || []
-  const existingExamples = data.solvedExamples || []
-
-  const hasAmgmSection = existingSections.some((s) => s.title === NEVIENADIBU_AMGM_SECTION_TITLE)
-  const hasAmgmExample = existingExamples.some((e) => e.id === 'ex_amgm1')
-  if (hasAmgmSection || hasAmgmExample) {
-    console.log('AM-GM already seeded, skipping')
+  const doc = await ref.get()
+  if (!doc.exists) {
     return
   }
+  const data = doc.data()
+  const filteredExamples = (data.solvedExamples || []).filter((e) => !e.id.startsWith('ex_amgm'))
+  const filteredSections = (data.theory?.sections || []).filter((s) => s.title !== AMGM_SECTION_TITLE)
+  await ref.update({ solvedExamples: filteredExamples, 'theory.sections': filteredSections })
+  console.log('Stripped AM-GM theory and examples from nevienadibu-pieradisana')
+}
 
-  await ref.update({
-    'theory.sections': [...existingSections, ...nevienadibuNewSections],
-    solvedExamples: [...existingExamples, ...nevienadibuNewExamples],
-  })
-  console.log('Appended AM-GM theory section and examples to nevienadibu-pieradisana')
+async function seedVidejaisAritmetiskaisGeometriskais(db) {
+  const topicId = 'videjais-aritmetiskais-geometriskais'
+  const ref = db.collection('topics').doc(topicId)
+  const docSnap = await ref.get()
+  if (docSnap.exists) {
+    console.log(`[${topicId}] Already exists, skipping.`)
+    return
+  }
+  await ref.set(videjaisAritmetiskaisGeometriskaisTopicData, { merge: false })
+  for (const q of videjaisAritmetiskaisGeometriskaisQuiz) {
+    await ref.collection('quizQuestions').doc(q.id).set(q)
+  }
+  console.log(`Topic and quiz seeded: ${topicId}`)
+}
+
+async function seedKvadrataAtdalisana(db) {
+  const topicId = 'kvadrata-atdalisana'
+  const ref = db.collection('topics').doc(topicId)
+  const docSnap = await ref.get()
+  if (docSnap.exists) {
+    console.log(`[${topicId}] Already exists, skipping.`)
+    return
+  }
+  await ref.set(kvadrataAtdalisanaTopicData, { merge: false })
+  const nevRef = db.collection('topics').doc('nevienadibu-pieradisana')
+  const nevSnap = await nevRef.get()
+  if (!nevSnap.exists) {
+    console.log(`Topic seeded: ${topicId} (nevienadibu-pieradisana missing, skipped split cleanup)`)
+    return
+  }
+  const nevData = nevSnap.data()
+  const ex = nevData.solvedExamples || []
+  const filteredExamples = ex.filter((e) => !kvadrataMovedExampleIds.has(e.id))
+  const sec = nevData.theory?.sections || []
+  const filteredSections = sec.filter(
+    (s) => s.title !== pilnoKvadratuSectionTitle && s.title !== AMGM_SECTION_TITLE,
+  )
+  if (filteredExamples.length !== ex.length || filteredSections.length !== sec.length) {
+    await nevRef.update({
+      solvedExamples: filteredExamples,
+      'theory.sections': filteredSections,
+    })
+  }
+  console.log(`Topic seeded: ${topicId}; moved square-method content off nevienadibu-pieradisana if present`)
 }
 
 async function seedVirknesPapildinajumi(db) {
@@ -282,9 +338,11 @@ async function seed() {
     await seedKongruences(db)
     await seedVienādojumiVeselosSkaitļos(db)
     await seedSkaitlaPierakstsPapildinajumi(db)
-    await seedNevienadibuPieradisanaPapildinajumi(db)
     await seedSversanasUzdevumi(db)
     await seedVirknesPapildinajumi(db)
+    await stripAmgmFromNevienadibuPieradisana(db)
+    await seedVidejaisAritmetiskaisGeometriskais(db)
+    await seedKvadrataAtdalisana(db)
 
     console.log('Solved examples updated successfully')
     process.exit(0)
