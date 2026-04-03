@@ -15,6 +15,7 @@ import { additionalNewTopicQuizQuestionsByTopic } from './additionalNewTopicQuiz
 import { newInvariantiExamples, newVirknesExamples } from './appendExamplesSeedData.js'
 import nevienadibuPieradisanaTopicSeed from './nevienadibuPieradisanaTopicSeed.js'
 import { kongruencesQuiz, kongruencesTopicData } from './kongruencesSeedData.js'
+import { skaitlaPierakstsPapildinajumi } from './skaitlapierakstsPapildinajumiSeedData.js'
 import {
   vienadojumiVeselosSkaitlosQuiz,
   vienadojumiVeselosSkaitlosTopicData,
@@ -140,6 +141,16 @@ async function seedVienādojumiVeselosSkaitļos(db) {
   console.log(`Quiz questions seeded for: ${vienadojumiVeselosSkaitlosTopicId}`)
 }
 
+async function seedSkaitlaPierakstsPapildinajumi(db) {
+  const ref = db.collection('topics').doc('skaitlapieraksts')
+  const snap = await ref.get()
+  const existing = snap.data()?.solvedExamples || []
+  await ref.update({
+    solvedExamples: [...existing, ...skaitlaPierakstsPapildinajumi],
+  })
+  console.log('Appended solved examples to skaitlapieraksts')
+}
+
 async function seedNewTopicQuizzes(db) {
   for (const topicId of newTopicIdsForExtraQuiz) {
     const questions = additionalNewTopicQuizQuestionsByTopic[topicId]
@@ -175,6 +186,7 @@ async function seed() {
     await seedNewExamplesAndTopic(db)
     await seedKongruences(db)
     await seedVienādojumiVeselosSkaitļos(db)
+    await seedSkaitlaPierakstsPapildinajumi(db)
 
     console.log('Solved examples updated successfully')
     process.exit(0)
